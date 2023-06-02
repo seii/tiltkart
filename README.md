@@ -2,6 +2,34 @@
 
 This Unity-based game is intended to fully develop the [Karting Microgame](https://learn.unity.com/project/karting-template) sample provided as a tutorial by Unity while also making it compatible with the [TiltFive](https://www.tiltfive.com/) augmented reality system. The Unity example project provides many assets like multiple tracks and game modes which are not actually covered by the tutorial but can be fully implemented without adding any additional assets.
 
+## Added Features
+- NPC racers
+- TiltFive headset support
+- Game mode selection
+   - Time Trial
+- Kart model selection
+   - Default kart
+- Track selection
+   - Oval
+   - Winding
+- Non-Keyboard Input
+   - TiltFive Wand Controller
+   - Android touchscreen
+
+## Planned Features
+- Game mode selection
+   - Total Laps
+   - Ghost Race
+- Kart model selection
+   - Roadster
+   - 4x4
+- Track selection
+   - Country
+   - Mountain
+- Non-Keyboard Input
+   - Gamepad
+- Multiplayer
+
 # Contributing
 
 This repository will continue to track the latest LTS version of Unity. (Currently, this version is `2021.3.26f1`.)

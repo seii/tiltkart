@@ -12,6 +12,8 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
    - Roadster
    - 4x4
 - Track selection
+   - Country
+   - Mountain
    - Oval
    - Winding
 - Non-Keyboard Input
@@ -23,10 +25,6 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
 - Game mode selection
    - Total Laps
    - Ghost Race
-- Track selection
-   - Country
-   - Mountain
-- Multiplayer
 
 # Contributing
 

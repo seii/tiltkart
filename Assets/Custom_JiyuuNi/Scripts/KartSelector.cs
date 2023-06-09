@@ -14,8 +14,7 @@ public class KartSelector : MonoBehaviour
     private ArcadeKart currentKart;
     private GameObject trackingObject;
 
-    // Start is called before the first frame update
-    void Start()
+    private void OnEnable()
     {
         // Default to main camera
         trackingObject = mainCamera;

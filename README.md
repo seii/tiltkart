@@ -13,8 +13,9 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
    - Oval
    - Winding
 - Non-Keyboard Input
-   - TiltFive Wand Controller
+   - TiltFive Wand Controller (only in "controller mode")
    - Android touchscreen
+   - Gamepad
 
 ## Planned Features
 - Game mode selection
@@ -26,8 +27,6 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
 - Track selection
    - Country
    - Mountain
-- Non-Keyboard Input
-   - Gamepad
 - Multiplayer
 
 # Contributing

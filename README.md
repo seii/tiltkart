@@ -9,6 +9,8 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
    - Time Trial
 - Kart model selection
    - Default kart
+   - Roadster
+   - 4x4
 - Track selection
    - Oval
    - Winding
@@ -21,9 +23,6 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
 - Game mode selection
    - Total Laps
    - Ghost Race
-- Kart model selection
-   - Roadster
-   - 4x4
 - Track selection
    - Country
    - Mountain

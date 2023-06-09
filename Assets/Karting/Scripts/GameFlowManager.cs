@@ -50,7 +50,6 @@ public class GameFlowManager : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Finding Karts");
         karts = FindObjectsOfType<ArcadeKart>();
 
         if (autoFindKarts)
@@ -77,7 +76,7 @@ public class GameFlowManager : MonoBehaviour
         m_TimeManager.StopRace();
         foreach (ArcadeKart k in karts)
         {
-			k.SetCanMove(false);
+            k.SetCanMove(false);
         }
 
         //run race countdown animation

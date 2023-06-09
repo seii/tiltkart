@@ -50,9 +50,11 @@ public class GameFlowManager : MonoBehaviour
 
     void Start()
     {
+        Debug.Log("Finding Karts");
+        karts = FindObjectsOfType<ArcadeKart>();
+
         if (autoFindKarts)
         {
-            karts = FindObjectsOfType<ArcadeKart>();
             if (karts.Length > 0)
             {
                 if (!playerKart) playerKart = karts[0];
@@ -93,8 +95,9 @@ public class GameFlowManager : MonoBehaviour
     void StartRace() {
         foreach (ArcadeKart k in karts)
         {
-			k.SetCanMove(true);
+            k.SetCanMove(true);
         }
+
         m_TimeManager.StartRace();
     }
 

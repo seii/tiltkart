@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class CameraSwitcher : MonoBehaviour
@@ -6,6 +7,7 @@ public class CameraSwitcher : MonoBehaviour
     public GameObject MainCamera;
     [Tooltip("Which GameObject is the TiltFive Camera?")]
     public GameObject TiltFiveCamera;
+    public static event Action<GameObject> OnCameraChange;
 
     // Start is called before the first frame update
     void Start()
@@ -35,6 +37,7 @@ public class CameraSwitcher : MonoBehaviour
                 MainCamera.SetActive(false);
                 TiltFiveCamera.GetComponentInChildren<AudioListener>().enabled = true;
                 TiltFiveCamera.SetActive(true);
+                OnCameraChange?.Invoke(TiltFiveCamera);
             }
         }
         else
@@ -48,6 +51,7 @@ public class CameraSwitcher : MonoBehaviour
                 TiltFiveCamera.SetActive(false);
                 MainCamera.SetActive(true);
                 MainCamera.GetComponent<AudioListener>().enabled = false;
+                OnCameraChange?.Invoke(MainCamera);
             }
         }
     }

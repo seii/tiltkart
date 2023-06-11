@@ -17,7 +17,6 @@ public class HorizontalSelector : MonoBehaviour
 
     void Start()
     {
-        Debug.Log("Entering horiz Start");
         if (content != null && content.Length > 0)
         {
             updateFromPreference();
@@ -34,7 +33,6 @@ public class HorizontalSelector : MonoBehaviour
                 nextContent();
             });
         }
-        Debug.Log("Exiting horiz Start");
     }
 
     private void nextContent()

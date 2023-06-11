@@ -151,6 +151,7 @@ public abstract class Objective : MonoBehaviour
         {
             ReachCheckpoint(NumberOfPickupsRemaining - 1);
             Pickups.Remove(pickupCollected);
+
             if (gameMode == GameMode.Laps)
                 KartGame.Track.TimeDisplay.OnUpdateLap();
         }

@@ -6,7 +6,9 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
 - NPC racers
 - TiltFive headset support
 - Game mode selection
-   - Time Trial
+   - Time Limit
+   - Total Laps
+   - Crash
 - Kart model selection
    - Default kart
    - Roadster
@@ -21,24 +23,20 @@ This Unity-based game is intended to fully develop the [Karting Microgame](https
    - Android touchscreen
    - Gamepad
 
-## Planned Features
-- Game mode selection
-   - Total Laps
-   - Ghost Race
-
 # Contributing
 
-This repository will continue to track the latest LTS version of Unity. (Currently, this version is `2021.3.26f1`.)
+This repository was initially built using Unity version `2021.3.26f1`. Later Unity versions should be compatible, but this is not guaranteed.
 
-Contributors must refrain from adding new Unity assets or packages to this project, as doing so would complicate the current stated goal. However, contributors are welcome to fork this repository in order to pursue alternative goals which may include new Unity assets or packages.
+As the goal of this repository is to be a starting point with a basic TiltFive integration, any contributions which add new Unity assets or packages to this project will be rejected as adding unnecessary complexity. However, contributors are welcome to fork this repository in order to pursue alternative goals which may include new Unity assets or packages.
 
 # Building
-Currently TiltFive supports Linux and Windows. Android support is also offered, but it is considered experimental. This repository will continue to be tested against Windows and Android builds.
+Currently TiltFive supports Linux and Windows. Android support is also offered, but it is considered experimental. This repository will continue to be tested against Windows and Android builds only.
 
 To build this project, simply use Unity's "Build Settings" menu. By default the project will be set to build for Android as this is the slightly more complex setup. If you wish to build for Windows, switching to build for Windows instead should be sufficient with no further steps required.
 
 # Licensing
 There are multiple licenses to keep in mind:
-- This project is released under an Apache 2 license
+- Any code created for this repository is released under an Apache 2 license
 - The Unity-provided Karting Microgame is (according to its Unity Asset Store [entry](https://assetstore.unity.com/packages/3d/vehicles/karting-microgame-urp-150956)) released under the [Standard Unity Asset Store EULA](https://unity.com/legal/as-terms) license.
+   - Notably, this appears to mean that distribution of the "4x4" and "Roadster" assets is completely permissible when included with this game but developing with those assets may require either unlocking a license to the asset(s) yourself for free (by going through the Unity tutorial) or purchasing them outright from the Unity Asset Store. (This should not, however, be construed as official legal advice.)
 - TiltFive releases their SDK, including their Unity plugin, under the Apache 2 license.

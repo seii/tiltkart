@@ -15,6 +15,9 @@ public class CrashObject : TargetObject
     [Tooltip("Apply a force to the crash object to make it fly up onTrigger")]
     public float forceUpOnCollide;
 
+    [Tooltip("If greater than 0, destroy object after this many seconds")]
+    public float duration;
+
     Rigidbody m_rigid;
 
     void Start()
@@ -35,6 +38,8 @@ public class CrashObject : TargetObject
         Objective.OnUnregisterPickup(this);
 
         TimeManager.OnAdjustTime(TimeGained);
+
+        if (duration > 0f) Destroy(this.gameObject, duration);
     }
 
     private void OnTriggerEnter(Collider other)

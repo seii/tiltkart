@@ -133,6 +133,8 @@ public abstract class Objective : MonoBehaviour
 
             if (!lapObject.finishLap) return;
 
+            ObjectiveCompleteLaps.OnStartLap?.Invoke();
+
             if (!lapObject.lapOverNextPass)
             {
                 TimeDisplay.OnUpdateLap();
@@ -151,6 +153,7 @@ public abstract class Objective : MonoBehaviour
         {
             ReachCheckpoint(NumberOfPickupsRemaining - 1);
             Pickups.Remove(pickupCollected);
+
             if (gameMode == GameMode.Laps)
                 KartGame.Track.TimeDisplay.OnUpdateLap();
         }

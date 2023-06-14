@@ -1,6 +1,8 @@
-﻿﻿using System.Collections;
+﻿using System;
+﻿using System.Collections;
 using KartGame.Track;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class ObjectiveCompleteLaps : Objective
 {
@@ -11,10 +13,11 @@ public class ObjectiveCompleteLaps : Objective
     [Header("Notification")]
     [Tooltip("Start sending notification about remaining laps when this amount of laps is left")]
     public int notificationLapsRemainingThreshold = 1;
-
-
     
     public int currentLap { get; private set; }
+
+    public static Action OnStartLap;
+    public static Action OnEndLastLap;
 
     void Awake()
     {
@@ -36,7 +39,6 @@ public class ObjectiveCompleteLaps : Objective
 
     protected override void ReachCheckpoint(int remaining)
     {
-
         if (isCompleted)
             return;
 
@@ -47,6 +49,8 @@ public class ObjectiveCompleteLaps : Objective
         // update the objective text according to how many enemies remain to kill
         if (targetRemaining == 0)
         {
+            OnEndLastLap?.Invoke();
+
             CompleteObjective(string.Empty, GetUpdatedCounterAmount(),
                 "Objective complete: " + title);
         }
@@ -73,9 +77,4 @@ public class ObjectiveCompleteLaps : Objective
     {
         return currentLap + " / " + lapsToComplete;
     }
-  
-   
-  
-  
-
 }

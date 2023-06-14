@@ -6,6 +6,10 @@ TagManager:
   tags:
   - Checkpoint
   - NPCs
+  - CrashMode
+  - ObjectiveTypes
+  - PlayerCheckpoints
+  - Ghost
   layers:
   - Default
   - TransparentFX

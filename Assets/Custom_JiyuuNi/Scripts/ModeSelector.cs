@@ -1,10 +1,8 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ModeSelector : MonoBehaviour
 {
-    public ObjectiveReachTargets[] objectiveManagers;
+    public GameObject[] objectiveManagers;
 
     private string modeName;
 
@@ -17,7 +15,7 @@ public class ModeSelector : MonoBehaviour
 
         if(modeSet)
         {
-            if(modeName.Equals("TimeTrial"))
+            if (modeName.Equals("TimeTrial") || modeName.Equals("Laps"))
             {
                 setNPCsEnabled(true);
             }
@@ -39,7 +37,7 @@ public class ModeSelector : MonoBehaviour
         if (!string.IsNullOrEmpty(modeName))
         {
             Debug.Log("Mode name is: " + modeName);
-            foreach (ObjectiveReachTargets target in objectiveManagers)
+            foreach (GameObject target in objectiveManagers)
             {
                 if (target.name.EndsWith(modeName))
                 {
@@ -57,18 +55,21 @@ public class ModeSelector : MonoBehaviour
     {
         GameObject[] checkpoints = GameObject.FindGameObjectsWithTag("PlayerCheckpoints");
 
-        foreach (GameObject point in checkpoints)
+        if (checkpoints != null && checkpoints.Length > 0)
         {
-            Debug.Log("Verifying checkpoint type: " + point.name);
-            if (point.name.Equals(modeName))
+            foreach (GameObject point in checkpoints)
             {
-                Debug.Log("Activating checkpoint type: " + point.name);
-                point.SetActive(true);
-            }
-            else
-            {
-                Debug.Log("Deactivating checkpoint type: " + point.name);
-                point.SetActive(false);
+                //Debug.Log("Verifying checkpoint type: " + point.name);
+                if (point.name.Equals(modeName))
+                {
+                    //Debug.Log("Activating checkpoint type: " + point.name);
+                    point.SetActive(true);
+                }
+                else
+                {
+                    //Debug.Log("Deactivating checkpoint type: " + point.name);
+                    point.SetActive(false);
+                }
             }
         }
     }

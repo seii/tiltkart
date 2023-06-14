@@ -9,6 +9,7 @@ TagManager:
   - CrashMode
   - ObjectiveTypes
   - PlayerCheckpoints
+  - Ghost
   layers:
   - Default
   - TransparentFX

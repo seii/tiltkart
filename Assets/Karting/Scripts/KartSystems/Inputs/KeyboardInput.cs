@@ -14,9 +14,9 @@ namespace KartGame.KartSystems {
         public float deadZone = 0f;
 
         // Track current frame for input delays, if any
-        private int accelDelay = 0;
+        /*private int accelDelay = 0;
         private int brakeDelay = 0;
-        private int turnDelay = 0;
+        private int turnDelay = 0;*/
 
         public override InputData GenerateInput() {
             InputData result = new InputData

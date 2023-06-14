@@ -133,6 +133,8 @@ public abstract class Objective : MonoBehaviour
 
             if (!lapObject.finishLap) return;
 
+            ObjectiveCompleteLaps.OnStartLap?.Invoke();
+
             if (!lapObject.lapOverNextPass)
             {
                 TimeDisplay.OnUpdateLap();

@@ -67,21 +67,38 @@ public class HorizontalSelector : MonoBehaviour
         currentContentIndex = index;
         GameObject obj = content[currentContentIndex];
         obj.SetActive(true);
+        makeTrackName(obj);
 
-        if(trackNameText != null)
+        OnSelectionChange?.Invoke(this.gameObject.name, obj.name);
+    }
+
+    private void makeTrackName(GameObject obj)
+    {
+        string tempName = obj.name;
+        
+        string[] textBeginnings = { "Kart" };
+        string[] textEndings = { "_Player", "Track" };
+
+        foreach (string ending in textEndings)
         {
-            string[] textEndings = {"_Player", "Track" };
-
-            foreach(string ending in textEndings)
+            if (tempName.EndsWith(ending))
             {
-                if(obj.name.EndsWith(ending))
-                {
-                    trackNameText.text = obj.name.Substring(0, obj.name.LastIndexOf(ending));
-                }
+                tempName = tempName.Substring(0, tempName.LastIndexOf(ending));
             }
         }
-        
-        OnSelectionChange?.Invoke(this.gameObject.name, obj.name);
+
+        foreach (string beginning in textBeginnings)
+        {
+            if (tempName.StartsWith(beginning))
+            {
+                tempName = tempName.Substring(beginning.Length);
+            }
+        }
+
+        if (trackNameText != null)
+        {
+            trackNameText.text = tempName;
+        }
     }
 
     private void updateFromPreference()

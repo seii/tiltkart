@@ -472,7 +472,7 @@ namespace UnityEngine.EventSystems
             if(TiltFive.Input.GetWandAvailability())
             {
                 // Reverse the axes because gamepad mode is assumed
-                moveT5.x = TiltFive.Input.GetStickTilt().y;
+                moveT5.x = -1 * TiltFive.Input.GetStickTilt().y;
                 moveT5.y = TiltFive.Input.GetStickTilt().x;
             }
 

@@ -28,14 +28,12 @@ public class CameraSwitcher : MonoBehaviour
     {
         if (TiltFive.Display.GetGlassesAvailability())
         {
-            Debug.Log("Glasses found!");
+            //Debug.Log("Glasses found!");
             // Only make the switch if the TiltFive camera isn't already active
             if(!TiltFiveCamera.activeInHierarchy)
             {
                 Debug.Log("TiltFive prefab not active, activating...");
-                MainCamera.GetComponent<AudioListener>().enabled = false;
                 MainCamera.SetActive(false);
-                TiltFiveCamera.GetComponentInChildren<AudioListener>().enabled = true;
                 TiltFiveCamera.SetActive(true);
                 OnCameraChange?.Invoke(TiltFiveCamera);
             }
@@ -47,10 +45,8 @@ public class CameraSwitcher : MonoBehaviour
             {
                 Debug.Log("Glasses not found, using main camera");
 
-                TiltFiveCamera.GetComponentInChildren<AudioListener>().enabled = false;
                 TiltFiveCamera.SetActive(false);
                 MainCamera.SetActive(true);
-                MainCamera.GetComponent<AudioListener>().enabled = false;
                 OnCameraChange?.Invoke(MainCamera);
             }
         }

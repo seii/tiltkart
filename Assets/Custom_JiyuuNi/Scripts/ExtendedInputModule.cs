@@ -449,10 +449,10 @@ namespace UnityEngine.EventSystems
             var data = GetBaseEventData();
 
             // If TiltFive buttons are pressed, they take priority over other control schemes
-            if (TiltFive.Input.GetButton(TiltFive.Input.WandButton.A))
+            if (TiltFive.Input.GetButtonUp(TiltFive.Input.WandButton.A))
                 ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.submitHandler);
 
-            if (TiltFive.Input.GetButton(TiltFive.Input.WandButton.B))
+            if (TiltFive.Input.GetButtonUp(TiltFive.Input.WandButton.B))
                 ExecuteEvents.Execute(eventSystem.currentSelectedGameObject, data, ExecuteEvents.cancelHandler);
 
             if (input.GetButtonDown(m_SubmitButton))

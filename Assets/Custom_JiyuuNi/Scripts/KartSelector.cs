@@ -44,9 +44,6 @@ public class KartSelector : MonoBehaviour
         if (string.IsNullOrEmpty(kartName))
         {
             currentKart = PlayerKarts[0];
-            currentKart.gameObject.SetActive(true);
-            gameManager.playerKart = currentKart;
-            ResetCameras(currentKart);
         }
         else
         {
@@ -61,19 +58,24 @@ public class KartSelector : MonoBehaviour
                     }
 
                     currentKart = kart;
-                    currentKart.gameObject.SetActive(true);
-                    gameManager.playerKart = currentKart;
-                    ResetCameras(currentKart);
                     break;
                 }
             }
         }
+
+        //Debug.Log("KartSelector: Current kart is " + currentKart.gameObject.name);
+
+        currentKart.gameObject.SetActive(true);
+        gameManager.playerKart = currentKart;
+        ResetCameras(currentKart);
     }
 
     private void ResetCameras(ArcadeKart kart)
     {
         Transform kartTransform = kart.gameObject.transform;
-        Transform capsuleTransform = kart.gameObject.transform.Find("KartBouncingCapsule").gameObject.transform;
+        Transform capsuleTransform = kart.gameObject.transform.Find("KartBouncingCapsule");
+
+        //Debug.Log("KartSelector: Current tracking object is " + trackingObject.gameObject.name);
 
         if (trackingObject.Equals(mainCamera))
         {
@@ -83,11 +85,18 @@ public class KartSelector : MonoBehaviour
         else if (trackingObject.Equals(tiltFiveGameBoard))
         {
             tiltFiveGameBoard.GetComponent<FollowKart>().followObject = kartTransform;
+            //Debug.Log("KartSelector: Set follow object to " + kartTransform.gameObject.name);
         }
     }
 
     private void CheckCurrentCamera(GameObject newCamera)
     {
+        //Debug.Log("KartSelector: New camera name is " + newCamera.name);
+        if(newCamera.name.Equals("Tilt Five Camera"))
+        {
+            trackingObject = tiltFiveGameBoard;
+        }
+
         ResetCameras(currentKart);
     }
 }

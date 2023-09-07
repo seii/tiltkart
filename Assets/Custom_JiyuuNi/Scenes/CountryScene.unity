@@ -4629,6 +4629,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ML_Checkpoint_3
       objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
 --- !u!4 &418018998 stripped
@@ -5022,6 +5027,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ML_Checkpoint_4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
@@ -5999,6 +6009,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameBoardTransform: {fileID: 2084139025}
   followObject: {fileID: 1304724376}
+  positionAdjustment: {x: 0, y: 0, z: 0}
+  rotationAdjustment: {x: 0, y: 0, z: 0}
 --- !u!4 &636407410 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 400000, guid: dca6189290e8c16479a364fa6d80b6b8,
@@ -9515,7 +9527,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 871312592}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &871312595
 Camera:
   m_ObjectHideFlags: 0
@@ -13799,6 +13811,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ML_Checkpoint_6
       objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
 --- !u!4 &1238809539 stripped
@@ -15490,6 +15507,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: ML_Checkpoint_5
       objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
 --- !u!4 &1346030388 stripped
@@ -15733,6 +15755,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ML_Checkpoint_21
+      objectReference: {fileID: 0}
+    - target: {fileID: 5958405211963077905, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
@@ -16489,6 +16516,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ML_Checkpoint_7
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
@@ -19546,6 +19578,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ML_Checkpoint_2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}
@@ -22722,17 +22759,17 @@ PrefabInstance:
     - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 2.25
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
         type: 3}
       propertyPath: m_LocalScale.y
-      value: 2.25
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 2.25
+      value: 0.8
       objectReference: {fileID: 0}
     - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
         type: 3}
@@ -22748,6 +22785,36 @@ PrefabInstance:
         type: 3}
       propertyPath: m_LocalPosition.z
       value: -3.9
+      objectReference: {fileID: 0}
+    - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5096850158276147074, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: m_ConstrainProportionsScale
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6132178175923897642, guid: ac17611f933f2524b8ee0a5036ffd429,
         type: 3}
@@ -22872,6 +22939,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   gameBoardTransform: {fileID: 2084139025}
   followObject: {fileID: 1304724376}
+  positionAdjustment: {x: 0, y: 8, z: 0}
+  rotationAdjustment: {x: -45, y: 0, z: 0}
 --- !u!1001 &2088909034
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -23709,6 +23778,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: ML_Checkpoint_1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633449694790155774, guid: 15fe5806233aa8c49a366eba47b8e32a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 15fe5806233aa8c49a366eba47b8e32a, type: 3}

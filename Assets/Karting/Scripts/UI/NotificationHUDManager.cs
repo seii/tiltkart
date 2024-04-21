@@ -27,11 +27,11 @@ public class NotificationHUDManager : MonoBehaviour
 
     public void RegisterObjective(Objective objective)
     {
-        objective.onUpdateObjective += OnUpdateObjective;
+        Objective.onUpdateObjective += OnUpdateObjective;
     }
 
     public void UnregisterObjective(Objective objective)
     {
-        objective.onUpdateObjective -= OnUpdateObjective;
+        Objective.onUpdateObjective -= OnUpdateObjective;
     }
 }

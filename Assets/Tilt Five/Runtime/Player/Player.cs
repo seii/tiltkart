@@ -1,4 +1,19 @@
-﻿using System;
+﻿/*
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using TiltFive.Logging;
@@ -14,9 +29,17 @@ namespace TiltFive
     /// </summary>
     public class Player : Singleton<Player>
     {
+        // SEII: Adding action for new player additions
+        #region Public Actions
+
+        public static event Action<PlayerIndex> newPlayerAdded;
+
+        #endregion
+
         #region Private Fields
 
         private Dictionary<PlayerIndex, PlayerCore> players = new Dictionary<PlayerIndex, PlayerCore>();
+
         internal static bool scanningForPlayers = false;
 
         #endregion
@@ -51,6 +74,41 @@ namespace TiltFive
 
             friendlyName = playerCore.FriendlyName;
             return true;
+        }
+
+        /// <summary>
+        /// Obtains the <see cref="PlayerSettings"/> corresponding to the specified player.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <param name="playerSettings"></param>
+        /// <returns>Returns false and sets <paramref name="playerSettings"/> to null if the provided player index is invalid,
+        /// or if there are no player settings defined in the scene due to the absence of a <see cref="TiltFiveManager2"/> or <see cref="TiltFiveManager"/>.</returns>
+        public static bool TryGetSettings(PlayerIndex playerIndex, out PlayerSettings playerSettings)
+        {
+            // We need to obtain a TiltFiveManager2 or TiltFiveManager to query for player settings.
+            // Since we don't know which (if either) is available, we'll use TiltFiveSingletonHelper.
+            if (playerIndex == PlayerIndex.None || !TiltFiveSingletonHelper.TryGetISceneInfo(out var sceneInfo))
+            {
+                playerSettings = null;
+                return false;
+            }
+
+            if (sceneInfo is TiltFiveManager2 tiltFiveManager2
+                && tiltFiveManager2.TryGetPlayerSettings(playerIndex, out var resultingPlayerSettings))
+            {
+                playerSettings = resultingPlayerSettings;
+                return true;
+            }
+
+            // If we are dealing with a TiltFiveManager, the scene is singleplayer-only; reject other player indices.
+            if (sceneInfo is TiltFiveManager tiltFiveManager && playerIndex == PlayerIndex.One)
+            {
+                playerSettings = tiltFiveManager.playerSettings;
+                return true;
+            }
+
+            playerSettings = null;
+            return false;
         }
 
         #endregion
@@ -135,9 +193,9 @@ namespace TiltFive
                 return;
             }
             scanningForPlayers = true;
-            Glasses.ScanForGlasses();
+            Glasses.Scan();
 
-            Wand.ScanForWands();
+            Wand.Scan();
             scanningForPlayers = false;
         }
 
@@ -220,10 +278,12 @@ namespace TiltFive
                 // then we assign the specified glasses to a new player #1.
                 if (!players.ContainsKey(currentPlayerIndex))
                 {
+                    // SEII: Adding action for new player additions
+                    newPlayerAdded?.Invoke(currentPlayerIndex);
                     Glasses.TryGetFriendlyName(glassesHandle, out var friendlyName);
                     players[currentPlayerIndex] = new PlayerCore(glassesHandle, friendlyName);
 
-                    Log.Info($"Player {currentPlayerIndex} created. Glasses: {glassesHandle} (\"{friendlyName}\")");
+                    Log.Info($"Player {currentPlayerIndex} created. Glasses: {glassesHandle}(\"{friendlyName}\")");
 
                     // Default control should go to the lowest player index.
                     // If this playerIndex is lower than that of any other current players,
@@ -338,6 +398,49 @@ namespace TiltFive
                 Glasses.Update(GlassesHandle, glassesSettings, scaleSettings, gameboardSettings, spectatorSettings);
                 Wand.Update(GlassesHandle, rightWandSettings, scaleSettings, gameboardSettings);
                 Wand.Update(GlassesHandle, leftWandSettings, scaleSettings, gameboardSettings);
+            }
+        }
+
+        #endregion
+
+
+        #region Public Classes
+
+        /// <summary>
+        /// Suspends coroutine execution until the provided player has connected.
+        /// </summary>
+        /// <remarks>
+        /// This custom yield instruction is useful for performing tasks that depend
+        /// on a specific player being connected and initialized.
+        /// This is a tidy alternative to repeatedly polling <see cref="Player.IsConnected(PlayerIndex)"/>
+        /// in a loop or using UnityEngine.WaitUntil.
+        /// </remarks>
+        /// <example>
+        /// Let's assume that we've written a script that needs to cache the player's head pose root GameObject
+        /// in a member variable for later use. The head pose root GameObject doesn't exist until the specified player
+        /// connects and creates it during initialization, so we need to wait for the player to connect.
+        ///
+        /// private IEnumerator Start()
+        /// {
+        ///     // ...
+        ///     // We can do some other initialization here before we begin waiting.
+        ///     // ...
+        ///
+        ///     // Suspend this coroutine until the specified player has connected.
+        ///     yield return new Player.WaitUntilPlayerConnected(PlayerIndex.Two);
+        ///
+        ///     // Now that the player has connected, it is safe to obtain and store the player's head pose root GameObject.
+        ///     m_glassesPoseRoot = Glasses.GetPoseRoot(PlayerIndex.Two);
+        /// }
+        /// </example>
+        public class WaitUntilPlayerConnected : CustomYieldInstruction
+        {
+            public override bool keepWaiting => !TiltFive.Player.IsConnected(playerIndex);
+            private PlayerIndex playerIndex = PlayerIndex.One;
+
+            public WaitUntilPlayerConnected(PlayerIndex playerIndex)
+            {
+                this.playerIndex = playerIndex;
             }
         }
 

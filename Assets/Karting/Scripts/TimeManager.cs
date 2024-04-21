@@ -10,6 +10,8 @@ public class TimeManager : MonoBehaviour
 
     private bool raceStarted;
 
+    private string thisClass = nameof(TimeManager);
+
     public static Action<float> OnAdjustTime;
     public static Action<int, bool, GameMode> OnSetTime;
 
@@ -61,10 +63,12 @@ public class TimeManager : MonoBehaviour
 
     public void StartRace()
     {
+        print($"{thisClass}: Starting race");
         raceStarted = true;
     }
 
     public void StopRace() {
+        print($"{thisClass}: Stopping race");
         raceStarted = false;
     }
 }

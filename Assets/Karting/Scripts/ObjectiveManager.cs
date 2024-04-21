@@ -10,11 +10,28 @@ public class ObjectiveManager : MonoBehaviour
 
     public static Action<Objective> RegisterObjective;
 
+    public static event Action<bool> allObjectivesComplete;
+
+    private bool isCompleted;
+
+    private string thisClass = nameof(ObjectiveManager);
+
     public void OnEnable()
     {
         RegisterObjective += OnRegisterObjective;
+        isCompleted = false;
+        print($"Enabled {thisClass}");
     }
-    
+
+    private void Update()
+    {
+        if(!isCompleted && m_Objectives.Count > 0 && AreAllObjectivesCompleted())
+        {
+            isCompleted = true;
+            allObjectivesComplete?.Invoke(true);
+        }
+    }
+
     public bool AreAllObjectivesCompleted()
     {
         if (m_Objectives.Count == 0)
@@ -36,6 +53,7 @@ public class ObjectiveManager : MonoBehaviour
 
     public void OnRegisterObjective(Objective objective)
     {
+        //print($"{thisClass}: Received objective");
         m_Objectives.Add(objective);
     }
 }

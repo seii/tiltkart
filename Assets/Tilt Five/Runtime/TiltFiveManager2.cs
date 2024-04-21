@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -114,6 +114,11 @@ namespace TiltFive
         public SpectatorSettings spectatorSettings = new SpectatorSettings();
 
         /// <summary>
+        /// Project-wide graphics settings related to Tilt Five.
+        /// </summary>
+        public GraphicsSettings graphicsSettings = new GraphicsSettings();
+
+        /// <summary>
         /// The log settings.
         /// </summary>
         public LogSettings logSettings = new LogSettings();
@@ -133,6 +138,15 @@ namespace TiltFive
 
         private static bool upgradeInProgress = false;
 
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+        /// <summary>
+        /// This mapping correlates TiltFive Player Index values (as playerIndexMapping indices) to Unity Player Index
+        /// values (as playerIndexMapping values).
+        /// i.e. unityPlayerIndex = playerIndexMapping[t5PlayerIndex];
+        /// </summary>
+        private int[] playerIndexMapping = {0,1,2,3};
+#endif
+
         /// <summary>
         /// Awake this instance.
         /// </summary>
@@ -144,15 +158,17 @@ namespace TiltFive
             Log.LogLevel = logSettings.level;
             Log.TAG = logSettings.TAG;
 
-            if (Application.platform == RuntimePlatform.Android)
+            // Store graphics settings
+            graphicsSettings.applicationTargetFramerate = Application.targetFrameRate;
+            graphicsSettings.applicationVSyncCount = QualitySettings.vSyncCount;
+
+            if (!SystemControl.SetPlatformContext())
             {
-                if (!Display.SetPlatformContext()) {
-                    Log.Warn("Failed to set application context.");
-                    enabled = false;
-                }
+                Log.Warn("Failed to set application context.");
+                enabled = false;
             }
 
-            if (!Display.SetApplicationInfo())
+            if (!SystemControl.SetApplicationInfo())
             {
                 Log.Warn("Failed to send application info to the T5 Service.");
                 enabled = false;
@@ -212,6 +228,7 @@ namespace TiltFive
             Wand.GetLatestInputs();     // Should only be executed once per frame
 #endif
             RefreshSpectatorSettings();
+            Display.ApplyGraphicsSettings(graphicsSettings);
 
             for (int i = 0; i < supportedPlayerCount; i++)
             {
@@ -294,7 +311,7 @@ namespace TiltFive
             {
                 try
                 {
-                    ServiceCompatibility compatibility = NativePlugin.GetServiceCompatibility();
+                    ServiceCompatibility compatibility = SystemControl.GetServiceCompatibility();
                     bool needsUpdate = compatibility == ServiceCompatibility.Incompatible;
 
                     if (needsUpdate)
@@ -307,7 +324,7 @@ namespace TiltFive
                     }
                     else
                     {
-                        // Not incompatible.  Reset the incompatibility warning.
+                        // Not incompatible. Reset the incompatibility warning.
                         needsDriverUpdateNotifiedOnce = false;
                     }
                     return needsUpdate;
@@ -330,6 +347,90 @@ namespace TiltFive
             // an update is needed or not.  Just say no.
             return false;
         }
+
+        /// <summary>
+        /// Gets the player settings for the specified player.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <param name="playerSettings"></param>
+        /// <returns>Returns false and sets <paramref name="playerSettings"/> to null if an invalid player index is provided.</returns>
+        public bool TryGetPlayerSettings(PlayerIndex playerIndex, out PlayerSettings playerSettings)
+        {
+            switch (playerIndex)
+            {
+                case PlayerIndex.One:
+                    playerSettings = playerOneSettings;
+                    return true;
+                case PlayerIndex.Two:
+                    playerSettings = playerTwoSettings;
+                    return true;
+                case PlayerIndex.Three:
+                    playerSettings = playerThreeSettings;
+                    return true;
+                case PlayerIndex.Four:
+                    playerSettings = playerFourSettings;
+                    return true;
+                default:
+                    playerSettings = null;
+                    return false;
+            }
+        }
+
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+        internal void RefreshInputDevicePairings()
+        {
+            foreach (WandDevice wand in Input.wandDevices)
+            {
+                PlayerInput playerInput = null;
+                if (wand != null)
+                {
+                    playerInput = PlayerInput.GetPlayerByIndex(playerIndexMapping[(int)wand.playerIndex - 1]);
+                    if (playerInput != null)
+                    {
+                        InputUser.PerformPairingWithDevice(wand, playerInput.user);
+                    }
+                }
+            }
+            foreach (GlassesDevice glasses in Input.glassesDevices)
+            {
+                PlayerInput playerInput = null;
+                if(glasses != null)
+                {
+                    playerInput = PlayerInput.GetPlayerByIndex(playerIndexMapping[(int)glasses.PlayerIndex - 1]);
+                    if (playerInput != null)
+                    {
+                        InputUser.PerformPairingWithDevice(glasses, playerInput.user);
+                    }
+                }
+            }
+        }
+
+        internal void ReassignPlayerIndexMapping(int[] mapping)
+        {
+            if(mapping.Length != 4)
+            {
+                throw new System.ArgumentException("Invalid player index mapping argument - mapping should be 4 values long");
+            }
+            for (var i = 0; i < mapping.Length; i++)
+            {
+                if(mapping[i] < 0)
+                {
+                    throw new System.ArgumentException("Invalid player index mapping argument - mapping should contain positive values only");
+                }
+                for (var j = 0; j < i; j++)
+                {
+                    if (mapping[i] == mapping[j])
+                    {
+                        throw new System.ArgumentException("Invalid player index mapping argument - mapping should contain no duplicates");
+                    }
+                }
+            }
+            playerIndexMapping = mapping;
+            RefreshInputDevicePairings();
+        }
+#endif //UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+
+
 
         /// <summary>
         /// Called when the GameObject is enabled.

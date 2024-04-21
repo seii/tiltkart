@@ -19,7 +19,7 @@ public class ObjectiveHUDManger : MonoBehaviour
 
     public void RegisterObjective(Objective objective)
     {
-        objective.onUpdateObjective += OnUpdateObjective;
+        Objective.onUpdateObjective += OnUpdateObjective;
 
         // instanciate the Ui element for the new objective
         GameObject objectiveUIInstance = objective.isOptional ? secondaryObjectivePrefab.getObject(true, objectivePanel.transform) : primaryObjectivePrefab.getObject(true, objectivePanel.transform);
@@ -40,7 +40,7 @@ public class ObjectiveHUDManger : MonoBehaviour
 
     public void UnregisterObjective(Objective objective)
     {
-        objective.onUpdateObjective -= OnUpdateObjective;
+        Objective.onUpdateObjective -= OnUpdateObjective;
 
         // if the objective if in the list, make it fade out, and remove it from the list
         if (m_ObjectivesDictionary.TryGetValue(objective, out ObjectiveToast toast))

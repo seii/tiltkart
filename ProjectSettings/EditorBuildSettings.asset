@@ -6,25 +6,31 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
+    path: Assets/JiyuuNi/Scenes/BackgroundScene.unity
+    guid: 399e44e641674404a80b408910e260da
+  - enabled: 1
+    path: Assets/JiyuuNi/Scenes/LoadingScene.unity
+    guid: 1ad05de2c131b3f4c8884ef0c3ef3fcc
+  - enabled: 1
     path: Assets/Karting/Scenes/IntroMenu.unity
     guid: d29260d8d84c94bd7ac95807b3da99d4
   - enabled: 1
-    path: Assets/Custom_JiyuuNi/Scenes/ModeSelectMenuScene.unity
+    path: Assets/JiyuuNi/Scenes/ModeSelectMenuScene.unity
     guid: 50c64a44b8847244b94c2fbdba8af8ea
   - enabled: 1
-    path: Assets/Custom_JiyuuNi/Scenes/TrackSelectMenuScene.unity
+    path: Assets/JiyuuNi/Scenes/TrackSelectMenuScene.unity
     guid: 2b79b781abaa8744a9daf65972f841c1
   - enabled: 1
-    path: Assets/Custom_JiyuuNi/Scenes/OvalScene.unity
+    path: Assets/JiyuuNi/Scenes/OvalScene.unity
     guid: fc26ef362246fcb44aa9f1d76a3624f6
   - enabled: 1
-    path: Assets/Custom_JiyuuNi/Scenes/CountryScene.unity
+    path: Assets/JiyuuNi/Scenes/CountryScene.unity
     guid: 7f11c564ccaaf62448514d7745046661
   - enabled: 1
-    path: Assets/Custom_JiyuuNi/Scenes/MountainScene.unity
+    path: Assets/JiyuuNi/Scenes/MountainScene.unity
     guid: d1b5ef42201332d44b08c00688038ead
   - enabled: 1
-    path: Assets/Custom_JiyuuNi/Scenes/WindingScene.unity
+    path: Assets/JiyuuNi/Scenes/WindingScene.unity
     guid: 30fea35e1f1a86444b2be5dcb1194599
   - enabled: 1
     path: Assets/Karting/Scenes/LoseScene.unity

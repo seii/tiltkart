@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,26 +28,32 @@ namespace TiltFive
         public const string PLUGIN_LIBRARY = @"TiltFiveUnity";
 #endif
 
+        internal const int T5_RESULT_SUCCESS = 0;
+        internal const int T5_RESULT_UNKNOWN_ERROR = 1;
+
         #region Native Functions
 
         // Init
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int SetApplicationInfo(
+        internal static extern int SetApplicationInfo(
             T5_StringUTF8 appName,
             T5_StringUTF8 appId,
             T5_StringUTF8 appVersion);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int SetPlatformContext(
+        internal static extern int SetPlatformContext(
             IntPtr platformContext);
 
         [DllImport(PLUGIN_LIBRARY)]
         [return: MarshalAs(UnmanagedType.I4)]
-        public static extern ServiceCompatibility GetServiceCompatibility();
+        internal static extern ServiceCompatibility GetServiceCompatibility();
+
+        [DllImport(PLUGIN_LIBRARY)]
+        internal static extern int IsTiltFiveUIRequestingAttention(ref T5_Bool attentionRequested);
 
         // Glasses Acquisition
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int RefreshGlassesAvailable();
+        internal static extern int RefreshGlassesAvailable();
 
         // Set Maximum Desired Glasses.  Count starts at 0.
         //
@@ -56,84 +62,91 @@ namespace TiltFive
         // this should only be called once on load to indicate how many glasses your application
         // wants.
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern void SetMaxDesiredGlasses(byte maxCount);
+        internal static extern void SetMaxDesiredGlasses(byte maxCount);
 
         // Glasses Availability
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetGlassesHandles(
+        internal static extern int GetGlassesHandles(
             ref byte handleCount,
             [MarshalAs(UnmanagedType.LPArray, SizeParamIndex=0)] UInt64[] glassesHandle);
 
         // Glasses Friendly Name
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetGlassesFriendlyName(UInt64 glassesHandle, ref T5_StringUTF8 glassesFriendlyName);
+        internal static extern int GetGlassesFriendlyName(UInt64 glassesHandle, ref T5_StringUTF8 glassesFriendlyName);
 
         // Head Pose
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetGlassesPose(
+        internal static extern int GetGlassesPose(
             UInt64 glassesHandle,
             ref T5_GlassesPose glassesPose,
             [MarshalAs(UnmanagedType.I4)] T5_GlassesPoseUsage glassesPoseUsage);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int ConfigureCameraStream(UInt64 glassesHandle, T5_CameraStreamConfig cameraConfig);
+        internal static extern int ConfigureCameraStream(UInt64 glassesHandle, T5_CameraStreamConfig cameraConfig);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetFilledCamImageBuffer(UInt64 glassesHandle, ref T5_CamImage camImageBuffer);
+        internal static extern int GetFilledCamImageBuffer(UInt64 glassesHandle, ref T5_CamImage camImageBuffer);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int SubmitEmptyCamImageBuffer(UInt64 glassesHandle, IntPtr camImageBuffer, UInt32 bufferSize);
+        internal static extern int SubmitEmptyCamImageBuffer(UInt64 glassesHandle, IntPtr camImageBuffer, UInt32 bufferSize);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int CancelCamImageBuffer(UInt64 glassesHandle, IntPtr buffer);
+        internal static extern int CancelCamImageBuffer(UInt64 glassesHandle, IntPtr buffer);
+
+#if TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
+        [DllImport(PLUGIN_LIBRARY)]
+        internal static extern int SetProjectorExtrinsicsAdjustment(UInt64 glassesHandle,
+            [MarshalAs(UnmanagedType.LPArray, SizeConst = 14)] float[] args);
+#endif
 
         // Gameboard dimensions
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetGameboardDimensions(
+        internal static extern int GetGameboardDimensions(
             [MarshalAs(UnmanagedType.I4)] GameboardType gameboardType,
             ref T5_GameboardSize playableSpaceInMeters);
 
         // Wand Availability
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetWandAvailability(
+        internal static extern int GetWandAvailability(
             UInt64 glassesHandle,
             ref T5_Bool wandAvailable,
             [MarshalAs(UnmanagedType.I4)] ControllerIndex wandTarget);
 
         // Scan for Wands
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int ScanForWands();
+        internal static extern int ScanForWands();
 
         // Wand Controls State
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetControllerState(
+        internal static extern int GetControllerState(
             UInt64 glassesHandle,
             [MarshalAs(UnmanagedType.I4)] ControllerIndex controllerIndex,
             ref T5_ControllerState controllerState);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int SetRumbleMotor(uint motor, float intensity);
+        internal static extern int SendImpulse(UInt64 glassesHandle,
+            [MarshalAs(UnmanagedType.I4)] ControllerIndex controllerIndex, float amplitude, ushort duration);
 
         // Submit Render Textures
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int QueueStereoImages(UInt64 glassesHandle, T5_FrameInfo frameInfo);
+        internal static extern int QueueStereoImages(UInt64 glassesHandle, T5_FrameInfo frameInfo);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern IntPtr GetSendFrameCallback();
+        internal static extern IntPtr GetSendFrameCallback();
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetMaxDisplayDimensions(
+        internal static extern int GetMaxDisplayDimensions(
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 2)] int[] displayDimensions);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern int GetGlassesIPD(UInt64 glassesHandle, ref float glassesIPD);
+        internal static extern int GetGlassesIPD(UInt64 glassesHandle, ref float glassesIPD);
 
         [DllImport(PLUGIN_LIBRARY)]
-        public static extern void UnloadWorkaround();
+        internal static extern void UnloadWorkaround();
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         [DllImport ("__Internal")]
-        public static extern void RegisterPlugin();
+        internal static extern void RegisterPlugin();
 #endif
 
         #endregion Native Functions
@@ -144,7 +157,7 @@ namespace TiltFive
     /// </summary>
     /// <remarks>This struct exists primarily to guarantee a common memory layout
     /// when marshaling bool values to/from the native plugin.</remarks>
-    public struct T5_Bool
+    internal struct T5_Bool
     {
         private readonly byte booleanByte;
 
@@ -220,7 +233,7 @@ namespace TiltFive
     /// Headset pose information to be retrieved with <see cref="NativePlugin.GetGlassesPose(ref T5_GlassesPose)"/>
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct T5_GlassesPose
+    internal struct T5_GlassesPose
     {
         public UInt64 TimestampNanos;
 
@@ -280,7 +293,7 @@ namespace TiltFive
     /// Contains wand related information (Pose, Buttons, Trigger, Stick, Battery)
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct T5_ControllerState
+    internal struct T5_ControllerState
     {
         [StructLayout(LayoutKind.Sequential)]
         public struct Joystick
@@ -376,7 +389,7 @@ namespace TiltFive
     /// Render information to be used with <see cref="NativePlugin.QueueStereoImages(T5_FrameInfo)"/>
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
-    public struct T5_FrameInfo
+    internal struct T5_FrameInfo
     {
         public IntPtr LeftTexHandle;
         public IntPtr RightTexHandle;
@@ -411,7 +424,7 @@ namespace TiltFive
     /// Note that it implements <see cref="IDisposable"/>, and that it should be wrapped
     /// in a "using" statement/block to avoid leaking memory.</remarks>
     [StructLayout(LayoutKind.Explicit, Pack = 4)]
-    public struct T5_StringUTF8 : IDisposable
+    internal struct T5_StringUTF8 : IDisposable
     {
         [FieldOffset(0)] private UInt32 maxBufferSize;
         [FieldOffset(4)] private UInt32 length;
@@ -524,11 +537,11 @@ namespace TiltFive
         /// </summary>
         Left = 1,
 
-        [Obsolete("ControllerIndex.Primary is deprecated, please update to use left/right based on user preference instead.")]
-        Primary = Right,
+        [Obsolete("ControllerIndex.Primary is obsolete, please update to use left/right based on user preference instead.", true)]
+        Primary = -1,
 
-        [Obsolete("ControllerIndex.Secondary is deprecated, please update to use left/right based on user preference instead.")]
-        Secondary = Left,
+        [Obsolete("ControllerIndex.Secondary is obsolete, please update to use left/right based on user preference instead.", true)]
+        Secondary = -2,
     }
 
     /// <summary>
@@ -566,14 +579,52 @@ namespace TiltFive
     [StructLayout(LayoutKind.Sequential)]
     public struct T5_GameboardSize
     {
-        public float PlayableSpaceX, PlayableSpaceY;
-        public float BorderWidth;
+        /// <summary>
+        /// The distance in meters from the gameboard origin to the edge of the viewable area in the positive X direction.
+        /// </summary>
+        public float ViewableExtentPositiveX;
 
-        public T5_GameboardSize(float playableSpaceX, float playableSpaceY, float borderWidth)
+        /// <summary>
+        /// The distance in meters from the gameboard origin to the edge of the viewable area in the negative X direction.
+        /// </summary>
+        public float ViewableExtentNegativeX;
+
+        /// <summary>
+        /// The distance in meters from the gameboard origin to the edge of the viewable area in the positive Z direction.
+        /// </summary>
+        public float ViewableExtentPositiveZ;
+
+        /// <summary>
+        /// The distance in meters from the gameboard origin to the edge of the viewable area in the negative Z direction.
+        /// </summary>
+        public float ViewableExtentNegativeZ;
+
+        /// <summary>
+        /// The distance in meters above the gameboard origin that the viewable area extends in the positive Y direction.
+        /// </summary>
+        public float ViewableExtentPositiveY;
+
+        public T5_GameboardSize(float viewableExtentPositiveX, float viewableExtentNegativeX,
+            float viewableExtentPositiveZ, float viewableExtentNegativeZ,
+            float viewableExtentPositiveY)
         {
-            PlayableSpaceX = playableSpaceX;
-            PlayableSpaceY = playableSpaceY;
-            BorderWidth = borderWidth;
+            ViewableExtentPositiveX = viewableExtentPositiveX;
+            ViewableExtentNegativeX = viewableExtentNegativeX;
+            ViewableExtentPositiveZ = viewableExtentPositiveZ;
+            ViewableExtentNegativeZ = viewableExtentNegativeZ;
+            ViewableExtentPositiveY = viewableExtentPositiveY;
+        }
+
+        [Obsolete("This version of the T5_GameboardSize constructor is obsolete. " +
+            "Please use T5_GameboardSize(float viewableExtentPositiveX, float viewableExtentNegativeX, " +
+            "float viewableExtentPositiveZ, float viewableExtentNegativeZ, float viewableExtentPositiveY) instead.")]
+        public T5_GameboardSize(float playableSpaceX, float playableSpaceZ, float borderWidth)
+        {
+            ViewableExtentPositiveX = playableSpaceX / 2f;
+            ViewableExtentNegativeX = playableSpaceX / 2f;
+            ViewableExtentPositiveZ = playableSpaceZ / 2f;
+            ViewableExtentNegativeZ = playableSpaceZ / 2f;
+            ViewableExtentPositiveY = 0f;
         }
     }
 
@@ -622,7 +673,7 @@ namespace TiltFive
     /// <summary>
     /// Glasses pose usage indicator
     /// </summary>
-    public enum T5_GlassesPoseUsage : Int32
+    internal enum T5_GlassesPoseUsage : Int32
     {
         /// <summary>
         /// The pose will be used to render images to be presented on the glasses.

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ namespace TiltFive
             playerFourSettingsProperty,
             spectatorSettingsProperty,
             logSettingsProperty,
+            graphicsSettingsProperty,
             editorSettingsProperty;
 
         SerializedProperty glassesSettingsProperty,
@@ -73,6 +74,7 @@ namespace TiltFive
             playerFourSettingsProperty = allPlayerSettingsProperty.GetArrayElementAtIndex(3);
             spectatorSettingsProperty = serializedObject.FindProperty("spectatorSettings");
             logSettingsProperty = serializedObject.FindProperty("logSettings");
+            graphicsSettingsProperty = serializedObject.FindProperty("graphicsSettings");
             editorSettingsProperty = serializedObject.FindProperty("editorSettings");
 
             playerIndices = System.Enum.GetValues(typeof(PlayerIndex));
@@ -137,7 +139,7 @@ namespace TiltFive
 
             if(!playerSettingsVisible)
             {
-                GlobalSettingsDrawer.Draw(playerProperties, spectatorSettingsProperty, logSettingsProperty);
+                GlobalSettingsDrawer.Draw(playerProperties, spectatorSettingsProperty, logSettingsProperty, graphicsSettingsProperty);
                 return;
             }
 
@@ -218,7 +220,7 @@ namespace TiltFive
             GUILayout.Space(8);
 
             // Draw Global Settings
-            GlobalSettingsDrawer.Draw(playerProperties, spectatorSettingsProperty, logSettingsProperty);
+            GlobalSettingsDrawer.Draw(playerProperties, spectatorSettingsProperty, logSettingsProperty, graphicsSettingsProperty);
         }
 
         private SerializedProperty GetPlayerSettings(PlayerIndex playerIndex)

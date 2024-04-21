@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -148,150 +148,6 @@ namespace TiltFive
 
         #region Public Functions
 
-        // Update is called once per frame
-        public static void Update(WandSettings wandSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings, PlayerIndex playerIndex = PlayerIndex.One)
-        {
-            // Update the relevant WandCore
-            if (Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
-            {
-                Update(glassesHandle, wandSettings, scaleSettings, gameBoardSettings);
-            }
-        }
-
-        internal static void Update(GlassesHandle glassesHandle, WandSettings wandSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings)
-        {
-            if(Instance.wandCores.TryGetValue(glassesHandle, out var wandPair)
-                && wandPair.TryGet(wandSettings.controllerIndex, out var wandCore))
-            {
-                wandCore.Update(wandSettings, scaleSettings, gameBoardSettings);
-            }
-        }
-
-        private static bool TryScanForWands()
-        {
-            var currentTime = System.DateTime.Now;
-            var timeSinceLastScan = currentTime - lastScanAttempt;
-
-            // Scan for wands if the scan interval has elapsed to catch newly connected wands.
-            if (timeSinceLastScan.TotalSeconds >= wandScanInterval)
-            {
-                int result = 1;
-
-                try
-                {
-                    result = NativePlugin.ScanForWands();
-                }
-                catch (System.DllNotFoundException e)
-                {
-                    Log.Info(
-                        "Could not connect to Tilt Five plugin to scan for wands: {0}",
-                        e);
-                }
-                catch (Exception e)
-                {
-                    Log.Error(e.Message);
-                }
-
-                lastScanAttempt = currentTime;
-                return (0 == result);
-            }
-
-            return false;
-        }
-
-        public static void ScanForWands()
-        {
-            // Tell the native plugin to search for wands.
-            TryScanForWands();
-
-            // Obtain the latest set of connected glasses
-            var connectedGlassesHandles = Glasses.GetAllConnectedGlassesHandles();
-
-            // Add/Remove entries from the wandCores dictionary depending on which glasses appeared/disappeared
-            // ---------------------------------------------------
-            var wandCores = Instance.wandCores;
-            var incomingHandles = Instance.incomingHandles;
-            var lostHandles = Instance.lostHandles;
-            var lostWands = Instance.lostWands;
-
-            incomingHandles.Clear();
-            lostHandles.Clear();
-            lostWands.Clear();
-
-            // Add newly connected wands
-            for (int i = 0; i < connectedGlassesHandles.Length; i++)
-            {
-                var glassesHandle = connectedGlassesHandles[i];
-                incomingHandles.Add(glassesHandle);
-
-                var rightWandCore = Instance.ObtainWandCore(glassesHandle, ControllerIndex.Right);
-                var leftWandCore = Instance.ObtainWandCore(glassesHandle, ControllerIndex.Left);
-
-                // Obtain and store a pair of WandCores to associate with this GlassesHandle.
-                // If either wand is unavailable, we'll just store null.
-                // This will also clear any WandCores that represented a now-disconnected wand.
-                wandCores[glassesHandle] = new WandPair(rightWandCore, leftWandCore);
-            }
-
-            // Prune disconnected wands
-            foreach(var glassesHandle in wandCores.Keys)
-            {
-                // If a pair of glasses disconnects, save its handle for the next foreach loop below
-                if(!incomingHandles.Contains(glassesHandle))
-                {
-                    lostHandles.Add(glassesHandle);
-                }
-                // otherwise, check if its wands are still connected.
-                else
-                {
-                    if(wandCores.TryGetValue(glassesHandle, out var wandPair))
-                    {
-                        if(wandPair.TryGet(ControllerIndex.Left, out var leftWandCore)
-                            && (!TryGetWandAvailability(out bool leftWandConnected, glassesHandle, ControllerIndex.Left) || !leftWandConnected))
-                        {
-                            lostWands.Add(leftWandCore);
-                        }
-                        if (wandPair.TryGet(ControllerIndex.Right, out var rightWandCore)
-                            && (!TryGetWandAvailability(out bool rightWandConnected, glassesHandle, ControllerIndex.Right) || !rightWandConnected))
-                        {
-                            lostWands.Add(rightWandCore);
-                        }
-                    }
-                }
-            }
-
-            foreach(var lostHandle in lostHandles)
-            {
-                var lostWandPair = wandCores[lostHandle];
-
-                if (lostWandPair.TryGet(ControllerIndex.Right, out var lostRightWand))
-                {
-                    lostWands.Add(lostRightWand);
-                }
-
-                if (lostWandPair.TryGet(ControllerIndex.Left, out var lostLeftWand))
-                {
-                    lostWands.Add(lostLeftWand);
-                }
-                wandCores.Remove(lostHandle);
-            }
-
-            foreach (var lostWand in lostWands)
-            {
-                lostWand.Dispose();
-            }
-        }
-
-        internal static void OnDisable()
-        {
-            foreach (var wandPair in Instance.wandCores.Values)
-            {
-                wandPair.RightWand?.Dispose();
-                wandPair.LeftWand?.Dispose();
-            }
-            Instance.wandCores.Clear();
-        }
-
         /// <summary>
         /// Gets the position of the wand in world space.
         /// </summary>
@@ -368,7 +224,7 @@ namespace TiltFive
                 || !wandPair.TryGet(controllerIndex, out var wandCore))
             {
                 connected = false;
-                return false;
+                return true;
             }
 
             connected = wandCore.IsConnected;
@@ -376,6 +232,16 @@ namespace TiltFive
         }
 
 #if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+        /// <summary>
+        /// Attempts to get the WandDevice corresponding to the specfied player and controller index.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <param name="controllerIndex"></param>
+        /// <param name="wandDevice"></param>
+        /// <returns>
+        /// Returns <c>false</c> along with a null WandDevice if the WandDevice could not be obtained for the specified
+        /// player and wand combination (e.g. if the specified player is not connected, or if their wand is not connected).
+        /// </returns>
         public static bool TryGetWandDevice(PlayerIndex playerIndex, ControllerIndex controllerIndex, out WandDevice wandDevice)
         {
             if(!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle) || !Instance.wandCores.TryGetValue(glassesHandle, out var wandPair)
@@ -390,43 +256,180 @@ namespace TiltFive
         }
 #endif
 
-        private static bool TryGetWandAvailability(out bool connected, GlassesHandle glassesHandle, ControllerIndex controllerIndex)
+        /// <summary>
+        /// Try to send a haptics impulse to the specified wand
+        /// </summary>
+        /// <param name="amplitude">The amplitude of the impulse, between [0.0,1.0].</param>
+        /// <param name="duration">The duration of the impulse, between 0.0 and  0.320 s.</param>
+        /// <param name="playerIndex"></param>
+        /// <param name="controllerIndex"></param>
+        /// <returns>Returns false if something went wrong while attempting to send the impulse command</returns>
+        public static bool TrySendImpulse(float amplitude, float duration, PlayerIndex playerIndex = PlayerIndex.One, ControllerIndex controllerIndex = ControllerIndex.Right)
         {
-            if (!wandAvailabilityErroredOnce)
+            if (!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle)
+                || !Instance.wandCores.TryGetValue(glassesHandle, out var wandPair)
+                || !wandPair.TryGet(controllerIndex, out var wandCore))
             {
-                try
-                {
-                    T5_Bool wandAvailable = false;
-                    int result = NativePlugin.GetWandAvailability(glassesHandle, ref wandAvailable, controllerIndex);
-
-                    if (result == 0)
-                    {
-                        connected = wandAvailable;
-                        return true;
-                    }
-                }
-                catch (DllNotFoundException e)
-                {
-                    Log.Info("Could not connect to Tilt Five plugin for wand: {0}", e.Message);
-                    wandAvailabilityErroredOnce = true;
-                }
-                catch (Exception e)
-                {
-                    Log.Error(
-                        "Failed to connect to Tilt Five plugin for wand availability: {0}",
-                        e.ToString());
-                    wandAvailabilityErroredOnce = true;
-                }
+                return false;
             }
 
-            connected = false;
-            return false;
+            try
+            {
+                if (NativePlugin.SendImpulse(glassesHandle, controllerIndex, amplitude, (UInt16)(Mathf.Clamp(duration, 0.0f, 0.320f) * 1000)) == 0)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (DllNotFoundException e)
+            {
+                Log.Info("Tilt Five library missing. Could not connect to wand: {0}", e.Message);
+                return false;
+            }
+            catch (Exception e)
+            {
+                Log.Error(
+                    "Failed to send impulse to wand: {0}",
+                    e.ToString());
+                return false;
+            }
         }
+
+        #region Deprecated Public Functions
+
+        // Update is called once per frame
+        [Obsolete("Converted to be an internal function.")]
+        public static void Update(WandSettings wandSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings, PlayerIndex playerIndex = PlayerIndex.One)
+        {
+            Update(playerIndex, wandSettings, scaleSettings, gameBoardSettings);
+        }
+
+        [Obsolete("Converted to be an internal function.")]
+        public static void ScanForWands()
+        {
+            Scan();
+        }
+
+        #endregion Deprecated Public Functions
 
         #endregion Public Functions
 
 
         #region Internal Functions
+
+        internal static void Update(PlayerIndex playerIndex, WandSettings wandSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings)
+        {
+            // Update the relevant WandCore
+            if (Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+            {
+                Update(glassesHandle, wandSettings, scaleSettings, gameBoardSettings);
+            }
+        }
+
+        internal static void Update(GlassesHandle glassesHandle, WandSettings wandSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings)
+        {
+            if (Instance.wandCores.TryGetValue(glassesHandle, out var wandPair)
+                && wandPair.TryGet(wandSettings.controllerIndex, out var wandCore))
+            {
+                wandCore.Update(wandSettings, scaleSettings, gameBoardSettings);
+            }
+        }
+
+        internal static void OnDisable()
+        {
+            foreach (var wandPair in Instance.wandCores.Values)
+            {
+                wandPair.RightWand?.Dispose();
+                wandPair.LeftWand?.Dispose();
+            }
+            Instance.wandCores.Clear();
+        }
+
+        internal static void Scan()
+        {
+            // Tell the native plugin to search for wands.
+            TryScanForWands();
+
+            // Obtain the latest set of connected glasses
+            var connectedGlassesHandles = Glasses.GetAllConnectedGlassesHandles();
+
+            // Add/Remove entries from the wandCores dictionary depending on which glasses appeared/disappeared
+            // ---------------------------------------------------
+            var wandCores = Instance.wandCores;
+            var incomingHandles = Instance.incomingHandles;
+            var lostHandles = Instance.lostHandles;
+            var lostWands = Instance.lostWands;
+
+            incomingHandles.Clear();
+            lostHandles.Clear();
+            lostWands.Clear();
+
+            // Add newly connected wands
+            for (int i = 0; i < connectedGlassesHandles.Length; i++)
+            {
+                var glassesHandle = connectedGlassesHandles[i];
+                incomingHandles.Add(glassesHandle);
+
+                var rightWandCore = Instance.ObtainWandCore(glassesHandle, ControllerIndex.Right);
+                var leftWandCore = Instance.ObtainWandCore(glassesHandle, ControllerIndex.Left);
+
+                // Obtain and store a pair of WandCores to associate with this GlassesHandle.
+                // If either wand is unavailable, we'll just store null.
+                // This will also clear any WandCores that represented a now-disconnected wand.
+                wandCores[glassesHandle] = new WandPair(rightWandCore, leftWandCore);
+            }
+
+            // Prune disconnected wands
+            foreach (var glassesHandle in wandCores.Keys)
+            {
+                // If a pair of glasses disconnects, save its handle for the next foreach loop below
+                if (!incomingHandles.Contains(glassesHandle))
+                {
+                    lostHandles.Add(glassesHandle);
+                }
+                // otherwise, check if its wands are still connected.
+                else
+                {
+                    if (wandCores.TryGetValue(glassesHandle, out var wandPair))
+                    {
+                        if (wandPair.TryGet(ControllerIndex.Left, out var leftWandCore)
+                            && (!TryGetWandAvailability(out bool leftWandConnected, glassesHandle, ControllerIndex.Left) || !leftWandConnected))
+                        {
+                            lostWands.Add(leftWandCore);
+                        }
+                        if (wandPair.TryGet(ControllerIndex.Right, out var rightWandCore)
+                            && (!TryGetWandAvailability(out bool rightWandConnected, glassesHandle, ControllerIndex.Right) || !rightWandConnected))
+                        {
+                            lostWands.Add(rightWandCore);
+                        }
+                    }
+                }
+            }
+
+            foreach (var lostHandle in lostHandles)
+            {
+                var lostWandPair = wandCores[lostHandle];
+
+                if (lostWandPair.TryGet(ControllerIndex.Right, out var lostRightWand))
+                {
+                    lostWands.Add(lostRightWand);
+                }
+
+                if (lostWandPair.TryGet(ControllerIndex.Left, out var lostLeftWand))
+                {
+                    lostWands.Add(lostLeftWand);
+                }
+                wandCores.Remove(lostHandle);
+            }
+
+            foreach (var lostWand in lostWands)
+            {
+                lostWand.Dispose();
+            }
+        }
 
         internal static void GetLatestInputs()
         {
@@ -575,13 +578,13 @@ namespace TiltFive
         internal static bool TryGetWandControlsState(GlassesHandle glassesHandle, out T5_ControllerState? controllerState,
             ControllerIndex controllerIndex = ControllerIndex.Right)
         {
-            int result = 1;
+            int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
 
             try
             {
                 T5_ControllerState state = new T5_ControllerState();
                 result = NativePlugin.GetControllerState(glassesHandle, controllerIndex, ref state);
-                controllerState = (result == 0)
+                controllerState = (result == NativePlugin.T5_RESULT_SUCCESS)
                     ? state
                     : (T5_ControllerState?)null;
             }
@@ -591,13 +594,78 @@ namespace TiltFive
                 Log.Error(e.Message);
             }
 
-            return (0 == result);
+            return result == NativePlugin.T5_RESULT_SUCCESS;
         }
 
         #endregion Internal Functions
 
 
         #region Private Functions
+
+        private static bool TryScanForWands()
+        {
+            var currentTime = System.DateTime.Now;
+            var timeSinceLastScan = currentTime - lastScanAttempt;
+
+            // Scan for wands if the scan interval has elapsed to catch newly connected wands.
+            if (timeSinceLastScan.TotalSeconds >= wandScanInterval)
+            {
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
+
+                try
+                {
+                    result = NativePlugin.ScanForWands();
+                }
+                catch (System.DllNotFoundException e)
+                {
+                    Log.Info(
+                        "Could not connect to Tilt Five plugin to scan for wands: {0}",
+                        e);
+                }
+                catch (Exception e)
+                {
+                    Log.Error(e.Message);
+                }
+
+                lastScanAttempt = currentTime;
+                return (result == NativePlugin.T5_RESULT_SUCCESS);
+            }
+
+            return false;
+        }
+
+        private static bool TryGetWandAvailability(out bool connected, GlassesHandle glassesHandle, ControllerIndex controllerIndex)
+        {
+            if (!wandAvailabilityErroredOnce)
+            {
+                try
+                {
+                    T5_Bool wandAvailable = false;
+                    int result = NativePlugin.GetWandAvailability(glassesHandle, ref wandAvailable, controllerIndex);
+
+                    if (result == NativePlugin.T5_RESULT_SUCCESS)
+                    {
+                        connected = wandAvailable;
+                        return true;
+                    }
+                }
+                catch (DllNotFoundException e)
+                {
+                    Log.Info("Could not connect to Tilt Five plugin for wand: {0}", e.Message);
+                    wandAvailabilityErroredOnce = true;
+                }
+                catch (Exception e)
+                {
+                    Log.Error(
+                        "Failed to connect to Tilt Five plugin for wand availability: {0}",
+                        e.ToString());
+                    wandAvailabilityErroredOnce = true;
+                }
+            }
+
+            connected = false;
+            return false;
+        }
 
         private WandCore ObtainWandCore(GlassesHandle glassesHandle, ControllerIndex controllerIndex)
         {
@@ -676,7 +744,7 @@ namespace TiltFive
 
                     var result = NativePlugin.GetControllerState(glassesHandle, controllerIndex, ref state);
 
-                    currentState = (result == 0)
+                    currentState = (result == NativePlugin.T5_RESULT_SUCCESS)
                         ? state
                         : (T5_ControllerState?)null;
                 }
@@ -830,7 +898,7 @@ namespace TiltFive
                         T5_Bool wandAvailable = false;
                         int result = NativePlugin.GetWandAvailability(glassesHandle, ref wandAvailable, controllerIndex);
 
-                        if (result == 0)
+                        if (result == NativePlugin.T5_RESULT_SUCCESS)
                         {
                             isConnected = wandAvailable;
                             connected = wandAvailable;
@@ -1039,21 +1107,8 @@ namespace TiltFive
                     {
                         glassesDevice.LeftWand = wandDevice;
                     }
-
-                    var inputUserCount = InputUser.all.Count;
-                    var playerIndex = (int)glassesDevice.PlayerIndex;
-                    var headPoseRoot = Glasses.GetPoseRoot(glassesDevice.PlayerIndex);
-
-                    //If a PlayerInput component exists for a specific player, pair our wand to that device, and make sure it's using the XR scheme
-                    if (headPoseRoot != null && inputUserCount >= playerIndex)
-                    {
-                        var playerInput = headPoseRoot.GetComponentInChildren<PlayerInput>();
-
-                        if(playerInput != null && playerInput.user.valid)
-                        {
-                            InputUser.PerformPairingWithDevice(wandDevice, playerInput.user);
-                            playerInput.user.ActivateControlScheme("XR");
-                        }
+                    if(TiltFiveManager2.IsInstantiated){
+                        TiltFiveManager2.Instance.RefreshInputDevicePairings();
                     }
                 }
             }
@@ -1148,6 +1203,61 @@ namespace TiltFive
 #endif
 
         #endregion Private Classes
+
+
+        #region Public Classes
+
+        /// <summary>
+        /// Suspends coroutine execution until the provided player's wand has connected.
+        /// </summary>
+        /// <remarks>
+        /// This custom yield instruction is useful for performing tasks that depend on
+        /// a specific player's wand being connected and initialized. This is a tidy alternative to
+        /// polling <see cref="Wand.TryCheckConnected(out bool, PlayerIndex, ControllerIndex)"/>
+        /// in a loop or using UnityEngine.WaitUntil.
+        /// </remarks>
+        /// <example>
+        /// Let's assume we are making a game that requires both wands (left and right) from a specific player to be connected.
+        ///
+        /// We may want to display a prompt for the specified player to connect both of their wands,
+        /// update the prompt as the wands are connected, then dismiss the prompt once the player is ready.
+        ///
+        /// private IEnumerator PromptPlayerForBothWands(PlayerIndex targetPlayer)
+        /// {
+        ///     // Let's assume this coroutine is part of a script with a member variable called playerConnectivityPrompt.
+        ///     // Start by defining some text asking the player to connect their left and right wands, then revealing the prompt.
+        ///     playerConnectivityPrompt.SetText("Waiting for left and right wands...");
+        ///     playerConnectivityPrompt.Show();
+        ///
+        ///     // Suspend this coroutine until the player's right wand has connected.
+        ///     yield return new WaitUntilWandConnected(targetPlayer, ControllerIndex.Right);
+        ///
+        ///     // Adjust the prompt text now that we know that the right wand is connected.
+        ///     playerConnectivityPrompt.SetText("Waiting for left wand...");
+        ///
+        ///     // Suspend this coroutine until the player's left wand has connected.
+        ///     yield return new WaitUntilWandConnected(targetPlayer, ControllerIndex.Left);
+        ///
+        ///     // Now that both wands are connected, we can hide the prompt and end the coroutine.
+        ///     playerConnectivityPrompt.Hide();
+        /// }
+        /// </example>
+        public class WaitUntilWandConnected : CustomYieldInstruction
+        {
+            public override bool keepWaiting => !Player.IsConnected(playerIndex)                    // Keep waiting if the player isn't connected,
+                || !Wand.TryCheckConnected(out bool wandConnected, playerIndex, controllerIndex)    // or if their wand can't be checked,
+                || !wandConnected;                                                                  // or if their wand isn't connected.
+            private PlayerIndex playerIndex = PlayerIndex.One;
+            private ControllerIndex controllerIndex = ControllerIndex.Right;
+
+            public WaitUntilWandConnected(PlayerIndex playerIndex, ControllerIndex controllerIndex)
+            {
+                this.playerIndex = playerIndex;
+                this.controllerIndex = controllerIndex;
+            }
+        }
+
+        #endregion
     }
 
 }

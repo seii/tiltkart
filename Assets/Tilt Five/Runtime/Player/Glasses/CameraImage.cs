@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -181,7 +181,7 @@ namespace TiltFive
 
             public bool TryConfigureCameraImageStream(T5_CameraStreamConfig config)
             {
-                int result = 1;
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
                 try
                 {
                     result = NativePlugin.ConfigureCameraStream(glassesHandle, config);
@@ -190,12 +190,12 @@ namespace TiltFive
                 {
                     Log.Error($"Error enabling Camera Stream: {e.Message}");
                 }
-                return result == 0;
+                return result == NativePlugin.T5_RESULT_SUCCESS;
             }
 
             public bool TryGetFilledCameraImageBuffer(ref T5_CamImage camImage)
             {
-                int result = 1;
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
 
                 try
                 {
@@ -205,12 +205,12 @@ namespace TiltFive
                 {
                     Log.Error($"Error getting Camera Image: {e.Message}");
                 }
-                return result == 0;
+                return result == NativePlugin.T5_RESULT_SUCCESS;
             }
 
             public bool TrySubmitEmptyCameraImageBuffer(IntPtr imageBuffer, UInt32 bufferSize)
             {
-                int result = 1;
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
                 try
                 {
                     result = NativePlugin.SubmitEmptyCamImageBuffer(glassesHandle, imageBuffer, bufferSize);
@@ -220,12 +220,12 @@ namespace TiltFive
                     Log.Error($"Error submitting Camera Image Buffer: {e.Message}");
                 }
 
-                return result == 0;
+                return result == NativePlugin.T5_RESULT_SUCCESS;
             }
 
             public bool TryCancelCameraImageBuffer(byte[] imageBuffer)
             {
-                int result = 1;
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
                 try
                 {
                     GCHandle handle = GCHandle.Alloc(imageBuffer, GCHandleType.Pinned);
@@ -238,7 +238,7 @@ namespace TiltFive
                     Log.Error($"Error clearing Camera Image Buffers: {e.Message}");
                 }
 
-                return result == 0;
+                return result == NativePlugin.T5_RESULT_SUCCESS;
             }
         }
     }

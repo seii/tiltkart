@@ -27,6 +27,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.40802622, y: 0, z: -0.68122816}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4895846115861964227}
   m_RootOrder: 2
@@ -88,6 +89,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.40482116, y: 0, z: 0.58625615}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4895846115861964227}
   m_RootOrder: 1
@@ -153,6 +155,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4895846115356922126}
   - {fileID: 4895846115861964227}
@@ -185,36 +188,36 @@ MonoBehaviour:
   m_GameObject: {fileID: 4895846115232909980}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b2e8893a3093437d9d101b53db56941, type: 3}
+  m_Script: {fileID: 11500000, guid: 1ecb43c7520f00c42a16afcda90b0aac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   baseStats:
-    TopSpeed: 15
-    Acceleration: 12
+    TopSpeed: 10
+    Acceleration: 5
     ReverseSpeed: 5
     ReverseAcceleration: 5
-    AccelerationCurve: 0.5
+    AccelerationCurve: 4
     Braking: 10
-    CoastingDrag: 2
+    CoastingDrag: 4
     Grip: 0.95
-    Steer: 3
+    Steer: 5
     AddedGravity: 1
   m_VisualWheels: []
   CenterOfMass: {fileID: 4895846115861964227}
   AirborneReorientationCoefficient: 3
   DriftGrip: 0.4
-  DriftAdditionalSteer: 2
-  MinAngleToFinishDrift: 12
-  MinSpeedPercentToFinishDrift: 0.4
-  DriftControl: 20
-  DriftDampening: 6
+  DriftAdditionalSteer: 5
+  MinAngleToFinishDrift: 10
+  MinSpeedPercentToFinishDrift: 0.5
+  DriftControl: 10
+  DriftDampening: 10
   DriftSparkVFX: {fileID: 5720418349283321134, guid: 83d0ce15c25af954bbd1425a9ddf8458,
     type: 3}
-  DriftSparkHorizontalOffset: 0.15
+  DriftSparkHorizontalOffset: 0.1
   DriftSparkRotation: 17
   DriftTrailPrefab: {fileID: 4162818498552360563, guid: cb1856df3376595449bbe8408a5dbe8e,
     type: 3}
-  DriftTrailVerticalOffset: 0.05
+  DriftTrailVerticalOffset: 0
   JumpVFX: {fileID: 2613765726699392021, guid: 63b5def8db7a0de41ab8201bc3ce6dc7, type: 3}
   NozzleVFX: {fileID: 7517924479111809978, guid: e89850b0c6c7e9f4591f70aa405a18a7,
     type: 3}
@@ -288,6 +291,7 @@ MonoBehaviour:
   TurnInputName: Horizontal
   AccelerateButtonName: Accelerate
   BrakeButtonName: Brake
+  deadZone: 0
 --- !u!1 &4895846115356922113
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,6 +319,7 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0.582, z: -0.10700226}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4895846115232909979}
   m_RootOrder: 0
@@ -360,6 +365,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.40427852, y: 0, z: -0.68122816}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4895846115861964227}
   m_RootOrder: 3
@@ -421,6 +427,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0.40427446, y: 0, z: 0.58625615}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4895846115861964227}
   m_RootOrder: 0
@@ -481,6 +488,7 @@ Transform:
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.12, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4895846115666603492}
   - {fileID: 4895846115166112467}

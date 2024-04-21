@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 #if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
 using UnityEditor;
 using UnityEngine;
+using System;
+using TiltFive.Logging;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
 using UnityEngine.InputSystem.Layouts;
@@ -197,6 +199,36 @@ namespace TiltFive
             }
 
             base.RefreshConfiguration();
+        }
+
+        protected new void SendImpulse(float amplitude, float duration){
+            try
+            {
+                if(!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+                {
+                    Log.Error("Failed to get glasses handle.");
+                    return;
+                }
+                //SendImpulse expects seconds. We'll convert to milliseconds before passing to the Native Code
+                if(NativePlugin.SendImpulse(glassesHandle, ControllerIndex, amplitude, (UInt16)(Mathf.Clamp(duration, 0.0f, 0.320f) * 1000)) == 0)
+                {
+                    return;
+                }
+                else
+                {
+                    Log.Error("Failed to send impulse to wand.");
+                }
+            }
+            catch (DllNotFoundException e)
+            {
+                Log.Info("Tilt Five library missing. Could not connect to wand: {0}", e.Message);
+            }
+            catch (Exception e)
+            {
+                Log.Error(
+                    "Failed to send impulse to wand: {0}",
+                    e.ToString());
+            }
         }
 
         #endregion

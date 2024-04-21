@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 #if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
 using UnityEngine.InputSystem;
@@ -70,147 +71,69 @@ namespace TiltFive
         /// </summary>
         /// <value><c>true</c> if player 1's glasses are connected and their glasses pose has been updated;
         /// otherwise, <c>false</c>.</value>
+        [Obsolete("Glasses.updated is deprecated. Please use Glasses.IsTracked() instead.")]
         public static bool updated => headPoseUpdated(PlayerIndex.One);
         /// <summary>
         /// Gets a value indicating whether this <see cref="T:TiltFive.Glasses"/> is configured.
         /// </summary>
         /// <value><c>true</c> if player 1's glasses are connected and they've been configured;
         /// otherwise, <c>false</c>.</value>
+        [Obsolete("Glasses.configured is deprecated. Please use Player.IsConnected() instead.")]
         public static bool configured => GetPlayerOneGlassesCore()?.configured ?? false;
         /// <summary>
         /// Gets the head pose position.
         /// </summary>
         /// <value>The position of player 1's glasses (if connected, otherwise a zero vector)</value>
+        [Obsolete("Glasses.position is deprecated. Please use Glasses.TryGetPose() and Pose.position instead.")]
         public static Vector3 position => GetPlayerOneGlassesCore()?.Pose_UnityWorldSpace.position ?? Vector3.zero;
         /// <summary>
         /// Gets the head pose rotation.
         /// </summary>
         /// <value>The rotation of player 1's glasses (if connected, otherwise the identity quaternion)</value>
+        [Obsolete("Glasses.rotation is deprecated. Please use Glasses.TryGetPose() and Pose.rotation instead.")]
         public static Quaternion rotation => GetPlayerOneGlassesCore()?.Pose_UnityWorldSpace.rotation ?? Quaternion.identity;
         /// <summary>
         /// Gets the head orientation's forward vector.
         /// </summary>
         /// <value>The forward vector of player 1's glasses (if connected, otherwise the default forward vector)</value>
+        [Obsolete("Glasses.forward is deprecated. Please use Glasses.TryGetPose() and Pose.forward instead.")]
         public static Vector3 forward => GetPlayerOneGlassesCore()?.Pose_UnityWorldSpace.forward ?? Vector3.forward;
         /// <summary>
         /// Gets the head orientation's right vector.
         /// </summary>
         /// <value>The right vector of player 1's glasses (if connected, otherwise the default right vector)</value>
+        [Obsolete("Glasses.right is deprecated. Please use Glasses.TryGetPose() and Pose.right instead.")]
         public static Vector3 right => GetPlayerOneGlassesCore()?.Pose_UnityWorldSpace.right ?? Vector3.right;
         /// <summary>
         /// Gets the head orientation's up vector.
         /// </summary>
         /// <value>The up vector of player 1's glasses (if connected, otherwise the default up vector)</value>
+        [Obsolete("Glasses.up is deprecated. Please use Glasses.TryGetPose() and Pose.up instead.")]
         public static Vector3 up => GetPlayerOneGlassesCore()?.Pose_UnityWorldSpace.up ?? Vector3.up;
 
         /// <summary>
         /// Gets the left eye position.
         /// </summary>
         /// <value>The left eye position of player 1's glasses (if connected, otherwise the zero vector)</value>
+        [Obsolete("Glasses.leftEyePosition is deprecated. Please use Glasses.GetLeftEye() and Transform.position")]
         public static Vector3 leftEyePosition => GetPlayerOneGlassesCore()?.eyePositions[AREyes.EYE_LEFT] ?? Vector3.zero;
         /// <summary>
         /// Gets the right eye position.
         /// </summary>
         /// <value>The right eye position of player 1's glasses (if connected, otherwise the zero vector)</value>
+        [Obsolete("Glasses.rightEyePosition is deprecated. Please use Glasses.GetRightEye() and Transform.position")]
         public static Vector3 rightEyePosition => GetPlayerOneGlassesCore()?.eyePositions[AREyes.EYE_RIGHT] ?? Vector3.zero;
 
         /// <summary>
         /// Indicates whether the glasses are plugged in and functioning.
         /// </summary>
+        [Obsolete("Glasses.glassesAvailable is deprecated. Please use Player.IsConnected() instead.")]
         public static bool glassesAvailable { get; private set; }
 
         #endregion Public Fields
 
 
         #region Public Functions
-
-        /// <summary>
-        /// Returns a boolean indication that the head pose was successfully
-        /// updated.
-        /// </summary>
-        /// <returns><c>true</c>, if the head pose was updated, <c>false</c> otherwise.</returns>
-        /// <param name="glassesHandle">The specified glasses. If null is provided, this uses the default glasses.</param>
-        public static bool headPoseUpdated(PlayerIndex playerIndex = PlayerIndex.One)
-        {
-            if(playerIndex == PlayerIndex.None || !Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
-            {
-                return false;
-            }
-
-            return Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore)
-                && glassesCore.TrackingUpdated;
-        }
-
-        /// <summary>
-        /// Reset this <see cref="T:TiltFive.Glasses"/>.
-        /// </summary>
-        /// <param name="glassesSettings">Glasses settings for configuring the specified glassesCore.</param>
-        /// <param name="playerIndex">The specified player. If None is provided, this resets all glasses.</param>
-        public static void Reset(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings = null, PlayerIndex playerIndex = PlayerIndex.None)
-        {
-            if(spectatorSettings == null && !TryGetSpectatorSettings(out spectatorSettings))
-            {
-                Log.Error("Glasses.Reset() could not find any spectator settings.");
-                return;
-            }
-
-            // If playerIndex is none, reset all glasses
-            if(playerIndex == PlayerIndex.None)
-            {
-                foreach (var glassesCore in Instance.glassesCores.Values)
-                {
-                    glassesCore.Reset(glassesSettings, spectatorSettings);
-                }
-                return;
-            }
-
-            if(Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
-            {
-                Reset(glassesSettings, spectatorSettings, glassesHandle);
-            }
-        }
-
-        /// <summary>
-        /// Validates the specified glassesSettings with the specified glasses core.
-        /// </summary>
-        /// <returns>
-        ///     <c>true</c>, if the glasses core is valid with the given settings,
-        ///     <c>false</c> otherwise.
-        /// </returns>
-        /// <param name="glassesSettings">Glasses settings.</param>
-        /// <param name="playerIndex">The specified glasses to validate. If None is provided, this uses the default glasses.</param>
-        public static bool Validate(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings = null, PlayerIndex playerIndex = PlayerIndex.One)
-        {
-            if(!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
-            {
-                return false;
-            }
-
-            if(spectatorSettings == null && !TryGetSpectatorSettings(out spectatorSettings))
-            {
-                return false;
-            }
-
-            return Validate(glassesSettings, spectatorSettings, glassesHandle);
-        }
-
-        /// <summary>
-        /// Updates this <see cref="T:TiltFive.Glasses"/>.
-        /// </summary>
-        /// <param name="glassesSettings">Glasses settings for the update.</param>
-        public static void Update(GlassesSettings glassesSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings)
-        {
-            if(!TryGetSpectatorSettings(out var spectatorSettings))
-            {
-                return;
-            }
-
-            // Update the glasses cores
-            foreach (var glassesCore in Instance.glassesCores.Values)
-            {
-                glassesCore.Update(glassesSettings, scaleSettings, gameBoardSettings, spectatorSettings);
-            }
-        }
 
         /// <summary>
         /// Indicate if the specified glasses are tracked.
@@ -223,18 +146,16 @@ namespace TiltFive
                 && IsTracked(glassesHandle);
         }
 
-        /// <summary>
-        /// Indicate if the specified glasses are connected.
-        /// </summary>
-        /// <returns><c>true</c> if the glasses are connected, <c>false</c> otherwise.</returns>
-        /// <param name="glassesHandle">Glasses handle to check.</param>
-        public static bool IsConnected(PlayerIndex playerIndex = PlayerIndex.One)
-        {
-            return Player.TryGetGlassesHandle(playerIndex, out var glassesHandle)
-                && IsConnected(glassesHandle);
-        }
-
 #if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+        /// <summary>
+        /// Attempts to get the GlassesDevice corresponding to the specfied player.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <param name="glassesDevice"></param>
+        /// <returns>
+        /// Returns <c>false</c> along with a null <paramref name="glassesDevice"/> if the GlassesDevice could not be obtained for the specified player
+        /// (e.g. if the specified player is not connected).
+        /// </returns>
         public static bool TryGetGlassesDevice(PlayerIndex playerIndex, out GlassesDevice glassesDevice)
         {
             if(!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
@@ -245,8 +166,16 @@ namespace TiltFive
 
             return TryGetGlassesDevice(glassesHandle, out glassesDevice);
         }
-#endif
+#endif // UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
 
+        /// <summary>
+        /// Gets the friendly name associated with the specified player's glasses in the Tilt Five Control Panel.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <param name="friendlyName"></param>
+        /// <returns>Returns <c>false</c> and sets <paramref name="friendlyName"/> to null if there was a problem
+        /// getting the friendly name for this player; otherwise true. This can happen if the provided PlayerIndex is invalid,
+        /// the player is not connected, or if the user hasn't yet set a friendly name for this particular set of glasses.</returns>
         public static bool TryGetFriendlyName(PlayerIndex playerIndex, out string friendlyName)
         {
             if(!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
@@ -258,12 +187,32 @@ namespace TiltFive
             return TryGetFriendlyName(glassesHandle, out friendlyName);
         }
 
+#if TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
+        public static bool TrySetProjectorExtrinsicsAdjustment(PlayerIndex playerIndex, float[] args)
+        {
+            if (!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+            {
+                return false;
+            }
+            return TrySetProjectorExtrinsicsAdjustment(glassesHandle, args);
+        }
+
+        public static bool SetSingleEyeMode(PlayerIndex playerIndex, AREyes eye)
+        {
+            if (!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+            {
+                return false;
+            }
+            return SetSingleEyeMode(glassesHandle, eye);
+        }
+#endif // TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
+
         /// <summary>
         /// Attempts to get the position and orientation of the specified player's glasses.
         /// </summary>
         /// <param name="playerIndex"></param>
         /// <param name="pose"></param>
-        /// <returns>Returns false along with an empty pose if something goes wrong.</returns>
+        /// <returns>Returns <c>false</c> along with an empty pose if something goes wrong.</returns>
         public static bool TryGetPose(PlayerIndex playerIndex, out Pose pose)
         {
             if(Player.TryGetGlassesHandle(playerIndex, out var glassesHandle) && Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore))
@@ -281,7 +230,7 @@ namespace TiltFive
         /// </summary>
         /// <param name="playerIndex"></param>
         /// <param name="pose"></param>
-        /// <returns>Returns false along with an empty pose if something goes wrong.</returns>
+        /// <returns>Returns <c>false</c> along with an empty pose if something goes wrong.</returns>
         public static bool TryGetPreviewPose(PlayerIndex playerIndex, out Pose pose)
         {
             if (Player.TryGetGlassesHandle(playerIndex, out var glassesHandle) && Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore))
@@ -293,6 +242,16 @@ namespace TiltFive
             return false;
         }
 
+        /// <summary>
+        /// Gets the pose root GameObject for the specified player.
+        /// </summary>
+        /// <remarks>
+        /// This GameObject's pose is driven by the player's head position over the gameboard.
+        /// Parented underneath this GameObject are the two eye cameras and an instance of
+        /// the developer-provided prefab in the player's Glasses settings.
+        /// </remarks>
+        /// <param name="playerIndex"></param>
+        /// <returns>Returns <c>null</c> if the specified player is not connected.</returns>
         public static GameObject GetPoseRoot(PlayerIndex playerIndex)
         {
             if(!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
@@ -302,6 +261,11 @@ namespace TiltFive
             return GetPoseRoot(glassesHandle);
         }
 
+        /// <summary>
+        /// Gets the left eye camera for the specified player's glasses.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <returns>Returns <c>null</c> if the specified player is not connected.</returns>
         public static Camera GetLeftEye(PlayerIndex playerIndex)
         {
             if (!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
@@ -311,6 +275,11 @@ namespace TiltFive
             return GetLeftEye(glassesHandle);
         }
 
+        /// <summary>
+        /// Gets the right eye camera for the specified player's glasses.
+        /// </summary>
+        /// <param name="playerIndex"></param>
+        /// <returns>Returns <c>null</c> if the specified player is not connected.</returns>
         public static Camera GetRightEye(PlayerIndex playerIndex)
         {
             if (!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
@@ -320,13 +289,92 @@ namespace TiltFive
             return GetRightEye(glassesHandle);
         }
 
-        public static void ScanForGlasses()
+        #region Deprecated Public Functions
+
+        /// <summary>
+        /// Returns a boolean indication that the head pose was successfully
+        /// updated.
+        /// </summary>
+        /// <returns><c>true</c>, if the head pose was updated, <c>false</c> otherwise.</returns>
+        /// <param name="glassesHandle">The specified glasses. If null is provided, this uses the default glasses.</param>
+        [Obsolete("Glasses.headPoseUpdated is deprecated. Please use Glasses.IsTracked() instead")]
+        public static bool headPoseUpdated(PlayerIndex playerIndex = PlayerIndex.One)
+        {
+            if (playerIndex == PlayerIndex.None || !Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+            {
+                return false;
+            }
+
+            return Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore)
+                && glassesCore.IsTracked;
+        }
+
+        /// <summary>
+        /// Reset this <see cref="T:TiltFive.Glasses"/>.
+        /// </summary>
+        /// <param name="glassesSettings">Glasses settings for configuring the specified glassesCore.</param>
+        /// <param name="playerIndex">The specified player. If None is provided, this resets all glasses.</param>
+        [Obsolete("Converted to be an internal function.")]
+        public static void Reset(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings = null, PlayerIndex playerIndex = PlayerIndex.None)
+        {
+            Reset(playerIndex, glassesSettings, spectatorSettings);
+        }
+
+        /// <summary>
+        /// Validates the specified glassesSettings with the specified glasses core.
+        /// </summary>
+        /// <returns>
+        ///     <c>true</c>, if the glasses core is valid with the given settings,
+        ///     <c>false</c> otherwise.
+        /// </returns>
+        /// <param name="glassesSettings">Glasses settings.</param>
+        /// <param name="playerIndex">The specified glasses to validate. If None is provided, this uses the default glasses.</param>
+        [Obsolete("Converted to be an internal function.")]
+        public static bool Validate(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings = null, PlayerIndex playerIndex = PlayerIndex.One)
+        {
+            return Validate(playerIndex, glassesSettings, spectatorSettings);
+        }
+
+        /// <summary>
+        /// Updates this <see cref="T:TiltFive.Glasses"/>.
+        /// </summary>
+        /// <param name="glassesSettings">Glasses settings for the update.</param>
+        [Obsolete("Converted to be an internal function.")]
+        public static void Update(GlassesSettings glassesSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings)
+        {
+            UpdateAllGlassesCores(glassesSettings, scaleSettings, gameBoardSettings);
+        }
+
+        /// <summary>
+        /// Indicate if the specified glasses are connected.
+        /// </summary>
+        /// <returns><c>true</c> if the glasses are connected, <c>false</c> otherwise.</returns>
+        /// <param name="glassesHandle">Glasses handle to check.</param>
+        [Obsolete("Deprecated in favor of Player.IsConnected().")]
+        public static bool IsConnected(PlayerIndex playerIndex = PlayerIndex.One)
+        {
+            return Player.TryGetGlassesHandle(playerIndex, out var glassesHandle)
+                && IsConnected(glassesHandle);
+        }
+
+        [Obsolete("Converted to be an internal function.")]
+        public static void ScanForGlasses() { Scan(); }
+
+        #endregion Deprecated Public Functions
+
+
+        #endregion Public Functions
+
+
+        #region Internal Functions
+
+        internal static void Scan()
         {
             // Enumerate the available glasses provided by the native plugin
             UInt64[] glassesHandles = new UInt64[GlassesSettings.MAX_SUPPORTED_GLASSES_COUNT];
             Debug.Assert(glassesHandles.Length <= Byte.MaxValue);
             byte glassesCount = (byte)glassesHandles.Length;
-            int result = 0;
+            int result = NativePlugin.T5_RESULT_SUCCESS;
 
             try
             {
@@ -347,7 +395,7 @@ namespace TiltFive
             lostHandles.Clear();
 
             // If we ran into a problem getting the glasses handles, all bets are off — just tear down the now-useless glasses cores.
-            if (result != 0)
+            if (result != NativePlugin.T5_RESULT_SUCCESS)
             {
                 foreach (var keyValuePair in glassesCores)
                 {
@@ -406,10 +454,29 @@ namespace TiltFive
             }
         }
 
-        #endregion Public Functions
+        internal static void Reset(PlayerIndex playerIndex, GlassesSettings glassesSettings, SpectatorSettings spectatorSettings = null)
+        {
+            if (spectatorSettings == null && !TryGetSpectatorSettings(out spectatorSettings))
+            {
+                Log.Error("Glasses.Reset() could not find any spectator settings.");
+                return;
+            }
 
+            // If playerIndex is none, reset all glasses
+            if (playerIndex == PlayerIndex.None)
+            {
+                foreach (var glassesCore in Instance.glassesCores.Values)
+                {
+                    glassesCore.Reset(glassesSettings, spectatorSettings);
+                }
+                return;
+            }
 
-        #region Internal Functions
+            if (Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+            {
+                Reset(glassesSettings, spectatorSettings, glassesHandle);
+            }
+        }
 
         internal static void Reset(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings, GlassesHandle glassesHandle)
         {
@@ -419,10 +486,39 @@ namespace TiltFive
             }
         }
 
+        internal static bool Validate(PlayerIndex playerIndex, GlassesSettings glassesSettings, SpectatorSettings spectatorSettings = null)
+        {
+            if (!Player.TryGetGlassesHandle(playerIndex, out var glassesHandle))
+            {
+                return false;
+            }
+
+            if (spectatorSettings == null && !TryGetSpectatorSettings(out spectatorSettings))
+            {
+                return false;
+            }
+
+            return Validate(glassesSettings, spectatorSettings, glassesHandle);
+        }
+
         internal static bool Validate(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings, GlassesHandle glassesHandle)
         {
             return Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore)
                 && glassesCore.Validate(glassesSettings, spectatorSettings);
+        }
+
+        internal static void UpdateAllGlassesCores(GlassesSettings glassesSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings)
+        {
+            if (!TryGetSpectatorSettings(out var spectatorSettings))
+            {
+                return;
+            }
+
+            // Update the glasses cores
+            foreach (var glassesCore in Instance.glassesCores.Values)
+            {
+                glassesCore.Update(glassesSettings, scaleSettings, gameBoardSettings, spectatorSettings);
+            }
         }
 
         internal static void Update(GlassesHandle glassesHandle, GlassesSettings glassesSettings, ScaleSettings scaleSettings,
@@ -458,7 +554,7 @@ namespace TiltFive
             glassesDevice = glassesDeviceCore.glassesDevice;
             return true;
         }
-#endif
+#endif // UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
 
         internal static bool TryGetFriendlyName(GlassesHandle glassesHandle, out string friendlyName)
         {
@@ -470,6 +566,26 @@ namespace TiltFive
 
             return glassesCore.TryGetFriendlyName(out friendlyName);
         }
+
+#if TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
+        internal static bool TrySetProjectorExtrinsicsAdjustment(GlassesHandle glassesHandle, float[] args)
+        {
+            if (!Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore))
+            {
+                return false;
+            }
+            return glassesCore.TrySetProjectorExtrinsicsAdjustment(args);
+        }
+
+        internal static bool SetSingleEyeMode(GlassesHandle glassesHandle, AREyes eye)
+        {
+            if (!Instance.glassesCores.TryGetValue(glassesHandle, out var glassesCore))
+            {
+                return false;
+            }
+            return glassesCore.SetSingleEyeMode(eye);
+        }
+#endif // TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
 
         /// <summary>
         /// Get handle for the default glasses. Typically, the first glasses plugged in will become
@@ -656,7 +772,7 @@ namespace TiltFive
             {
                 T5_GlassesPose glassesPoseResult = new T5_GlassesPose { };
 
-                int result = 1;
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
                 try
                 {
                     result = NativePlugin.GetGlassesPose(
@@ -669,7 +785,7 @@ namespace TiltFive
                     Log.Error(e.Message);
                 }
 
-                if (result == 0)
+                if (result == NativePlugin.T5_RESULT_SUCCESS)
                 {
                   GameBoard.SetGameboardType(glassesHandle, glassesPoseResult.GameboardType);
                 }
@@ -678,9 +794,9 @@ namespace TiltFive
                   GameBoard.SetGameboardType(glassesHandle, GameboardType.GameboardType_None);
                 }
 
-                poseIsValid = result == 0 && glassesPoseResult.GameboardType != GameboardType.GameboardType_None;
+                poseIsValid = result == NativePlugin.T5_RESULT_SUCCESS && glassesPoseResult.GameboardType != GameboardType.GameboardType_None;
                 glassesPose = glassesPoseResult;
-                return result == 0;
+                return result == NativePlugin.T5_RESULT_SUCCESS;
             }
 
             protected override void SetPoseGameboardSpace(
@@ -880,12 +996,6 @@ namespace TiltFive
             }
 
             /// <summary>
-            /// Gets a value indicating whether this <see cref="T:TiltFive.Glasses.GlassesCore"/> tracking was successfully updated.
-            /// </summary>
-            /// <value><c>true</c> if tracking updated; otherwise, <c>false</c>.</value>
-            public bool TrackingUpdated { get; private set; } = false;
-
-            /// <summary>
             /// The split stereo camera implementation used in lieu of XRSettings.
             /// </summary>
             private SplitStereoCamera splitStereoCamera = null;
@@ -898,7 +1008,7 @@ namespace TiltFive
             /// </summary>
             /// <param name="glassesSettings">Glasses settings for configuring the instance.</param>
             /// <param name="spectatorSettings">Spectator settings for configuring the instance.</param>
-            public void Reset(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings)
+            public virtual void Reset(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings)
             {
                 base.Reset(glassesSettings);
 
@@ -930,43 +1040,22 @@ namespace TiltFive
                         }
                         if (glassesSettings.objectTemplate && null == baseObject)
                         {
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+                            if(glassesSettings.objectTemplate.TryGetComponent<PlayerInput>(out var playerInput))
+                            {
+                                Log.Warn("Attaching a PlayerInput component to the Object Template is not recommended," +
+                                    " as the Object Template does not persist across scene loads." +
+                                    "Consider using the Input Template instead.");
+                            }
+#endif //UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
                             baseObject = GameObject.Instantiate(glassesSettings.objectTemplate, headPoseRoot.transform);
                             baseObject.name = $"{baseObject.transform.parent.name} - Prefab {playerIndex}";
-
-#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
-                            // If the provided prefab includes a playerInput, we assume the developer
-                            // is trying to use the input system to manage/enumerate their players.
-                            // Warn the developer that they should include a PlayerInputManager
-                            // if there isn't one already.
-                            var playerInput = baseObject.GetComponentInChildren<PlayerInput>();
-                            var playerInputManager = GameObject.FindObjectOfType<PlayerInputManager>();
-                            if (playerInput != null && playerInputManager == null)
-                            {
-                                Log.Warn("No PlayerInputManager detected. " +
-                                    "Add a PlayerInputManager to the scene to enable the Input System " +
-                                    "to enumerate players as T5 devices connect/disconnect.");
-                            }
-
-                            if (playerInput != null && playerInput.actions != null && playerInput.actions.controlSchemes.Count < 1)
-                            {
-                                // Control Schemes appear to be very important when creating an InputUser.
-                                // This isn't well-documented, but this can be a problem when working with a brand new empty Action Map.
-                                // If the action map doesn't include any defined schemes, User #1 (the second user)
-                                // will not be created in the Input System, and it isn't an obvious thing to debug.
-                                // Warn the developer if the action map they provide doesn't have any schemes defined yet.
-                                Log.Warn("The prefab provided to TiltFiveManager2 appears to have a PlayerInput component " +
-                                    "with an action map assigned, but the provided action map has no defined control schemes. " +
-                                    "This may cause the input system to fail to create a new InputUser for players 2 and beyond. " +
-                                    "Consider defining a control scheme in the provided action map.");
-                            }
-#endif
                         }
-
                         splitStereoCamera.Initialize(headPoseRoot, glassesSettings, spectatorSettings);
                     }
 #if UNITY_EDITOR
                 }
-#endif //UNITY_EDITOR
+#endif
 
                 TryGetFriendlyName(out friendlyName);
 
@@ -993,7 +1082,7 @@ namespace TiltFive
             public bool TryGetFriendlyName(out string friendlyName)
             {
                 T5_StringUTF8 friendlyNameResult = "";
-                int result = 1;
+                int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
 
                 try
                 {
@@ -1005,7 +1094,7 @@ namespace TiltFive
                 }
                 finally
                 {
-                    friendlyName = (result == 0)
+                    friendlyName = (result == NativePlugin.T5_RESULT_SUCCESS)
                     ? friendlyNameResult
                     : null;
 
@@ -1015,8 +1104,71 @@ namespace TiltFive
                     friendlyNameResult.Dispose();
                 }
 
-                return result == 0;
+                return result == NativePlugin.T5_RESULT_SUCCESS;
             }
+
+#if TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
+            public bool TrySetProjectorExtrinsicsAdjustment(float[] args)
+            {
+                int result = 1;
+
+                try
+                {
+                    result = NativePlugin.SetProjectorExtrinsicsAdjustment(glassesHandle, args);
+                }
+                catch (System.Exception e)
+                {
+                    Log.Error($"Error setting projector extrinsics adjustment: ${e.Message}");
+                }
+                return result == NativePlugin.T5_RESULT_SUCCESS;
+            }
+
+            public bool SetSingleEyeMode(AREyes eye)
+            {
+                Camera leftEyeCamera = splitStereoCamera.leftEyeCamera;
+                Camera rightEyeCamera = splitStereoCamera.rightEyeCamera;
+                if (leftEyeCamera == null || rightEyeCamera == null)
+                {
+                    Log.Error("Eye camera null during call to SetSingleEyeMode()");
+                    return false;
+                }
+
+                switch (eye)
+                {
+                    case AREyes.EYE_LEFT:
+                    {
+                        // Enable only the left eye
+                        leftEyeCamera.enabled = true;
+                        rightEyeCamera.enabled = false;
+                        // Clear the right eye texture
+                        RenderTexture rt = RenderTexture.active;
+                        RenderTexture.active = rightEyeCamera.targetTexture;
+                        GL.Viewport(rightEyeCamera.pixelRect);
+                        GL.Clear(true, true, Color.clear);
+                        RenderTexture.active = rt;
+                        break;
+                    }
+                    case AREyes.EYE_RIGHT:
+                    {
+                        // Enable only the right eye
+                        leftEyeCamera.enabled = false;
+                        rightEyeCamera.enabled = true;
+                        // Clear the left eye texture
+                        RenderTexture rt = RenderTexture.active;
+                        RenderTexture.active = leftEyeCamera.targetTexture;
+                        GL.Viewport(leftEyeCamera.pixelRect);
+                        GL.Clear(true, true, Color.clear);
+                        RenderTexture.active = rt;
+                        break;
+                    }
+                    case AREyes.EYE_MAX:
+                        leftEyeCamera.enabled = true;
+                        rightEyeCamera.enabled = true;
+                        break;
+                }
+                return true;
+            }
+#endif // TILT_FIVE_ENABLE_PROJECTOR_EXTRINSICS_ADJUSTMENTS
 
             /// <summary>
             /// Updates this <see cref="T:TiltFive.Glasses.GlassesCore"/>
@@ -1024,8 +1176,6 @@ namespace TiltFive
             /// <param name="glassesSettings">Glasses settings for the update.</param>
             public virtual void Update(GlassesSettings glassesSettings, ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings, SpectatorSettings spectatorSettings)
             {
-                TrackingUpdated = false;
-
                 if (null == glassesSettings)
                 {
                     Log.Error("GlassesSettings configuration required for Glasses tracking Update.");
@@ -1055,9 +1205,8 @@ namespace TiltFive
                 previewCore.Update(glassesSettings, scaleSettings, gameBoardSettings);
 
                 // Check whether the glasses are plugged in and available.
-                glassesAvailable = isConnected;
                 splitStereoCamera.glassesHandle = glassesHandle;
-                splitStereoCamera.enabled = glassesAvailable;
+                splitStereoCamera.enabled = isConnected;
 
                 // Sync settings with splitStereoCamera
                 splitStereoCamera.glassesSettings = glassesSettings;
@@ -1090,7 +1239,7 @@ namespace TiltFive
 
                 // compute half ipd translation
                 float ipd_UGBD = GlassesSettings.DEFAULT_IPD_UGBD;
-                if(!Display.GetGlassesIPD(glassesHandle, ref ipd_UGBD) && glassesAvailable)
+                if(!Display.GetGlassesIPD(glassesHandle, ref ipd_UGBD) && isConnected)
                 {
                     Log.Error("Failed to obtain Glasses IPD");
                 }
@@ -1150,6 +1299,7 @@ namespace TiltFive
         private class GlassesDeviceCore : GlassesCore, IDisposable
         {
             internal GlassesDevice glassesDevice;
+            internal GameObject playerTemplateObject;
 
             private enum TrackingState : int
             {
@@ -1166,6 +1316,10 @@ namespace TiltFive
                 if(glassesDevice != null && glassesDevice.added)
                 {
                     InputSystem.EnableDevice(glassesDevice);
+                }
+                if(TiltFiveManager2.IsInstantiated)
+                {
+                    TiltFiveManager2.Instance.RefreshInputDevicePairings();
                 }
             }
 
@@ -1185,6 +1339,21 @@ namespace TiltFive
                     }
                     InputSystem.DisableDevice(glassesDevice);
                     Input.RemoveGlassesDevice(playerIndex);
+                }
+                GameObject.Destroy(playerTemplateObject);
+            }
+
+            public override void Reset(GlassesSettings glassesSettings, SpectatorSettings spectatorSettings)
+            {
+                base.Reset(glassesSettings, spectatorSettings);
+
+                if(glassesSettings.playerTemplate)
+                {
+                    playerTemplateObject = GameObject.Instantiate(glassesSettings.playerTemplate);
+                    if(TiltFiveManager2.IsInstantiated)
+                    {
+                        TiltFiveManager2.Instance.RefreshInputDevicePairings();
+                    }
                 }
             }
 
@@ -1249,7 +1418,7 @@ namespace TiltFive
                 InputSystem.QueueDeltaStateEvent(quaternionControl.z, delta.z);
             }
         }
-#endif
+#endif // UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
 
     }
 }

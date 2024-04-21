@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -79,18 +79,28 @@ namespace TiltFive
 						}
 
 						s_Instance = instance;
-						DontDestroyOnLoad( s_Instance );
+
+						//We can't use DontDestroyOnLoad on objects that aren't root objects. (i.e. objects that have a parent)
+						if(s_Instance.gameObject.transform.parent == null && Application.isPlaying)
+						{
+							DontDestroyOnLoad( s_Instance );
+						}
 						break;
 					}
 				}
 
 
-				if( s_Instance == null )
+				if(s_Instance == null
+					// Don't automatically generate a new instance if the application isn't playing
+					// (i.e. we're in the editor with the game stopped)
+					&& Application.isPlaying)
 				{
 					string name = string.Format( "__{0}__", typeof( T ).FullName );
 					GameObject singletonGo = new GameObject( name );
 					s_Instance = singletonGo.AddComponent<T>();
-					DontDestroyOnLoad( s_Instance );
+					if(s_Instance.gameObject.transform.parent == null){
+						DontDestroyOnLoad( s_Instance );
+					}
 				}
 
 				return s_Instance;

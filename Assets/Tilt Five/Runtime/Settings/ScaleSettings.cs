@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,9 +73,9 @@ namespace TiltFive
         /// GameObject's scale was used to calculate scaleToUWRLD_UGBD.
         /// </summary>
         /// <remarks>
-        /// Setting this to false causes the correct use of the gameboard scale.
+        /// Setting this to true reverts to the legacy method for scaling the gameboard scale.
         /// </remarks>
-        public bool legacyInvertGameboardScale = true;
+        public bool legacyInvertGameboardScale = false;
 
         public const float MIN_CONTENT_SCALE_RATIO = 0.0000001f;
 

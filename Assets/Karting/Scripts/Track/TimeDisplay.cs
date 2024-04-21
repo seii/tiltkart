@@ -43,7 +43,6 @@ namespace KartGame.Track
 
         void SetLaps(int laps)
         {
-
             for (int i = 0; i < laps; i++)
             {
                 TimeDisplayItem newItem = timeDisplayItem.getObject(false, finishedLapsParent.transform).GetComponent<TimeDisplayItem>();
@@ -127,9 +126,11 @@ namespace KartGame.Track
         {
             TimeDisplayItem newItem = GetItem(lap);
 
-            newItem.SetText(getTimeString(finishedLapTimes[lap]));
+            String finishedTime = getTimeString(finishedLapTimes[lap]);
+            newItem.SetText(finishedTime);
             newItem.SetTitle($"Lap {lap+1}:");
             newItem.gameObject.SetActive(true);
+            Debug.Log($"Added finished lap {lap+1} with time {finishedTime}");
         }
 
         string DisplayCurrentLapTime()

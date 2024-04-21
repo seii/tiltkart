@@ -1,7 +1,8 @@
 {
     "name": "TiltFiveEditor",
     "references": [
-        "TiltFive"
+        "TiltFive",
+        "Unity.InputSystem"
     ],
     "optionalUnityReferences": [],
     "includePlatforms": [],
@@ -12,5 +13,12 @@
     "autoReferenced": true,
     "defineConstraints": [
         "UNITY_EDITOR"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0",
+            "define": "INPUTSYSTEM_AVAILABLE"
+        }
     ]
 }

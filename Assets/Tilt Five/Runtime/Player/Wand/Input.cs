@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -249,23 +249,6 @@ namespace TiltFive
             return Wand.TryCheckConnected(out var connected, PlayerIndex.One, controllerIndex) && connected;
         }
 
-        // Legacy code, might remove soon.
-        public static bool SetRumbleMotor(uint motor, float intensity)
-        {
-
-            int result = 0;
-            try
-            {
-                result = NativePlugin.SetRumbleMotor(motor, intensity);
-            }
-            catch (Exception e)
-            {
-                Log.Error(e.Message);
-            }
-
-            return (0 != result);
-        }
-
         public static void Update()
         {
             // Deleting this function would be appropriate, but since it's public,
@@ -340,7 +323,7 @@ namespace TiltFive
 
         static Input()
         {
-            Wand.ScanForWands();
+            Wand.Scan();
         }
 
 #if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
@@ -414,6 +397,7 @@ namespace TiltFive
                 wandDevices[i, j].ControllerIndex = controllerIndex;
                 InputSystem.AddDeviceUsage(wandDevices[i, j], $"Player{playerIndex}");
                 InputSystem.AddDeviceUsage(wandDevices[i, j], $"Player{playerIndex}-{handednessLabel}Hand");
+                InputSystem.AddDeviceUsage(wandDevices[i, j], wandDevices[i, j].ControllerIndex == ControllerIndex.Left ? CommonUsages.LeftHand : CommonUsages.RightHand);
                 InputSystem.QueueConfigChangeEvent(wandDevices[i, j]);
             }
         }

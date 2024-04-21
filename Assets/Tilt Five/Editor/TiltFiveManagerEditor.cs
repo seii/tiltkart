@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ namespace TiltFive
             rightWandSettingsProperty,
             leftWandSettingsProperty,
             logSettingsProperty,
+            graphicsSettingsProperty,
             editorSettingsProperty,
             spectatorSettingsProperty;
 
@@ -47,6 +48,7 @@ namespace TiltFive
             rightWandSettingsProperty = serializedObject.FindProperty("primaryWandSettings");
             leftWandSettingsProperty = serializedObject.FindProperty("secondaryWandSettings");
             logSettingsProperty = serializedObject.FindProperty("logSettings");
+            graphicsSettingsProperty = serializedObject.FindProperty("graphicsSettings");
             editorSettingsProperty = serializedObject.FindProperty("editorSettings");
             spectatorSettingsProperty = serializedObject.FindProperty("spectatorSettings");
         }
@@ -170,7 +172,7 @@ namespace TiltFive
 
         private void DrawGlassesSettings()
         {
-            GlassesSettingsDrawer.DrawSingleplayer(glassesSettingsProperty);
+            GlassesSettingsDrawer.DrawSingleplayer(glassesSettingsProperty, graphicsSettingsProperty);
         }
 
         #endregion

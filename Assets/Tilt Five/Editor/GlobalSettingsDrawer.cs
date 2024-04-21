@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,8 @@ namespace TiltFive
             SpectatingSettings,
             GizmoSettings,
             TrackingSettings,
-            LoggingSettings
+            LoggingSettings,
+            GraphicsSettings    // TODO: Discuss naming, think about other settings that might fit here besides the 60fps lock toggle
         }
 
         static SelectedTab selectedTab = SelectedTab.SpectatingSettings;
@@ -37,9 +38,10 @@ namespace TiltFive
         private static bool gizmoSettingsVisible => selectedTab == SelectedTab.GizmoSettings;
         private static bool trackingSettingsVisible => selectedTab == SelectedTab.TrackingSettings;
         private static bool loggingSettingsVisible => selectedTab == SelectedTab.LoggingSettings;
+        private static bool graphicsSettingsVisible => selectedTab == SelectedTab.GraphicsSettings;
 
         public static void Draw(List<SerializedProperty> playerSettingsProperties, 
-            SerializedProperty spectatorSettingsProperty, SerializedProperty logSettingsProperty)
+            SerializedProperty spectatorSettingsProperty, SerializedProperty logSettingsProperty, SerializedProperty graphicsSettingsProperty)
         {
             if (playerSettingsProperties == null || playerSettingsProperties.Count == 0)
             {
@@ -75,14 +77,15 @@ namespace TiltFive
 
             bool spectatorCameraAssigned = spectatorSettingsProperty.FindPropertyRelative("spectatorCamera").objectReferenceValue;
 
-            var settingsLabels = new GUIContent[4]
+            var settingsLabels = new GUIContent[5]
             {
                 spectatorCameraAssigned ? new GUIContent("Spectating")
                     : new GUIContent(EditorGUIUtility.IconContent("console.warnicon.sml"))
                     { text = " Spectating", tooltip = "No spectator camera assigned." },
                 new GUIContent("Gizmo"),
                 new GUIContent("Tracking"),
-                new GUIContent("Logging")
+                new GUIContent("Logging"),
+                new GUIContent("Graphics")
             };
 
             using (new EditorGUILayout.VerticalScope(playerSettingsBackgroundStyle))
@@ -214,6 +217,10 @@ namespace TiltFive
 
                 // Bonus: Draw labels for connected players, glasses, wands
 
+                if(graphicsSettingsVisible)
+                {
+                    GraphicsSettingsDrawer.Draw(graphicsSettingsProperty);
+                }
 
                 // Since we don't actually have a standalone "GlobalSettings" class, and since moving all these settings into one
                 // would be an API break, instead we have to reach down into the various settings classes and set them all at once.

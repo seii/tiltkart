@@ -1,0 +1,16 @@
+{
+    "name": "JiyuuNiGlobal",
+    "rootNamespace": "",
+    "references": [
+        "GUID:31541b962b0b7a144b1862827bc99e38"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

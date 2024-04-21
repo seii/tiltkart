@@ -20,6 +20,8 @@ public class CrashObject : TargetObject
 
     Rigidbody m_rigid;
 
+    private string thisClass = nameof(CrashObject);
+
     void Start()
     {
         m_rigid = GetComponent<Rigidbody>();
@@ -34,7 +36,7 @@ public class CrashObject : TargetObject
             CollectVFX.Play();
                
         if (m_rigid) m_rigid.AddForce(forceUpOnCollide*Vector3.up, ForceMode.Impulse);
-        
+
         Objective.OnUnregisterPickup(this);
 
         TimeManager.OnAdjustTime(TimeGained);
@@ -46,8 +48,12 @@ public class CrashObject : TargetObject
     {
         if (!active) return;
         
-        if ((layerMask.value & 1 << other.gameObject.layer) > 0 && other.gameObject.CompareTag("Player"))
+        if ((layerMask.value & 1 << other.gameObject.layer) > 0 &&
+            other.gameObject.CompareTag("Player"))
+        {
+            print($"{thisClass}: Collider {other.name} collected item {this.name}");
             OnCollect(other);
+        }
     }
     
 }

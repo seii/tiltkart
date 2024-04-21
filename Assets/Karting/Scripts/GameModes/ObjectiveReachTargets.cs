@@ -31,6 +31,7 @@ public class ObjectiveReachTargets : Objective
             pickupsToCompleteObjective = NumberOfPickupsTotal;
         
         Register();
+        UpdateObjective(string.Empty, GetUpdatedCounterAmount(), title);
     }
 
     protected override void ReachCheckpoint(int remaining)

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,10 @@ namespace TiltFive
         static readonly GUIContent metersLabel = new GUIContent("m", "meters");
 
         static readonly GUIContent cameraTemplateLabel = new GUIContent("Camera Template", "The Camera driven by the glasses head tracking system.");
-        static readonly GUIContent objectTemplateLabel = new GUIContent("Object Template", "The Game Object spawned by the glasses head tracking system when a new pair of glasses connects. An empty Game Object is created if nothing is specified.");
+        static readonly GUIContent objectTemplateLabel = new GUIContent("Glasses Object Template", "The Game Object spawned by the glasses head tracking system when a new pair of glasses connects, attached to a given Glasses Object. An empty Game Object is created if nothing is specified.");
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+        static readonly GUIContent playerTemplateLabel = new GUIContent("Player Template", "A Game Object spawned by the glasses head tracking system separate from the Glasses Object. Nothing is created if nothing is specified.");
+#endif
         static readonly GUIContent cloneChildrenLabel = new GUIContent("Clone Children",
             "False by default - the Camera Template's children are not cloned when creating the eye cameras at runtime." +
             System.Environment.NewLine + System.Environment.NewLine +
@@ -51,10 +54,13 @@ namespace TiltFive
         /// Draws the glasses settings for the singleplayer TiltFiveManager
         /// </summary>
         /// <param name="glassesSettingsProperty"></param>
-        public static void DrawSingleplayer(SerializedProperty glassesSettingsProperty)
+        public static void DrawSingleplayer(SerializedProperty glassesSettingsProperty, SerializedProperty graphicsSettingsProperty)
         {
             DrawSingleplayerCameraTemplateField(glassesSettingsProperty);
             DrawSingleplayerObjectTemplateField(glassesSettingsProperty);
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+            DrawSingleplayerPlayerTemplateField(glassesSettingsProperty);
+#endif
             DrawSingleplayerCullingMaskField(glassesSettingsProperty);
             DrawSingleplayerGlassesFOVField(glassesSettingsProperty);
             DrawSingleplayerClippingPlanes(glassesSettingsProperty);
@@ -64,6 +70,7 @@ namespace TiltFive
             EditorGUILayout.Space();
 
             DrawTrackingFailureModeField(glassesSettingsProperty);
+            GraphicsSettingsDrawer.Draw(graphicsSettingsProperty);
         }
 
         /// <summary>
@@ -78,6 +85,9 @@ namespace TiltFive
         {
             DrawPlayerOneCameraTemplateField(playerOneGlassesSettingsProperty, playerTwoGlassesSettingsProperty, playerThreeGlassesSettingsProperty, playerFourGlassesSettingsProperty);
             DrawPlayerOneObjectTemplateField(playerOneGlassesSettingsProperty, playerTwoGlassesSettingsProperty, playerThreeGlassesSettingsProperty, playerFourGlassesSettingsProperty);
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+            DrawPlayerOnePlayerTemplateField(playerOneGlassesSettingsProperty, playerTwoGlassesSettingsProperty, playerThreeGlassesSettingsProperty, playerFourGlassesSettingsProperty);
+#endif
             DrawPlayerOneCullingMaskField(playerOneGlassesSettingsProperty, playerTwoGlassesSettingsProperty, playerThreeGlassesSettingsProperty, playerFourGlassesSettingsProperty);
             DrawPlayerOneGlassesFOVField(playerOneGlassesSettingsProperty, playerTwoGlassesSettingsProperty, playerThreeGlassesSettingsProperty, playerFourGlassesSettingsProperty);
             DrawPlayerOneClippingPlanes(playerOneGlassesSettingsProperty, playerTwoGlassesSettingsProperty, playerThreeGlassesSettingsProperty, playerFourGlassesSettingsProperty);
@@ -94,6 +104,9 @@ namespace TiltFive
         {
             DrawRemainingPlayersCameraTemplateField(glassesSettingsProperty, playerOneGlassesSettingsProperty);
             DrawRemainingPlayersObjectTemplateField(glassesSettingsProperty, playerOneGlassesSettingsProperty);
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+            DrawRemainingPlayersPlayerTemplateField(glassesSettingsProperty, playerOneGlassesSettingsProperty);
+#endif
             DrawRemainingPlayersCullingMaskField(glassesSettingsProperty, playerOneGlassesSettingsProperty);
             DrawRemainingPlayersGlassesFOVField(glassesSettingsProperty, playerOneGlassesSettingsProperty);
             DrawRemainingPlayersClippingPlanes(glassesSettingsProperty, playerOneGlassesSettingsProperty);
@@ -313,8 +326,94 @@ namespace TiltFive
                 playerOneGlassesSettingsProperty.FindPropertyRelative("objectTemplate").TryExportObjectReference(objectTemplateProperty, copyObjectTemplateProperty.boolValue);
             }
         }
-        
+
         #endregion
+
+#if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
+        #region Input Template
+
+        /// <summary>
+        /// Draw the object template field for the singleplayer TiltFiveManager
+        /// </summary>
+        /// <param name="glassesSettingsProperty"></param>
+        private static void DrawSingleplayerPlayerTemplateField(SerializedProperty glassesSettingsProperty)
+        {
+            var playerTemplateProperty = glassesSettingsProperty.FindPropertyRelative("playerTemplate");
+
+            // Draw the object template field
+            EditorGUILayout.PropertyField(playerTemplateProperty, playerTemplateLabel, GUILayout.ExpandWidth(true));
+
+        }
+
+        /// <summary>
+        /// Draw the object template field for Player One for the multiplayer TiltFiveManager
+        /// </summary>
+        /// <param name="playerOneGlassesSettingsProperty"></param>
+        /// <param name="playerTwoGlassesSettingsProperty"></param>
+        /// <param name="playerThreeGlassesSettingsProperty"></param>
+        /// <param name="playerFourGlassesSettingsProperty"></param>
+        private static void DrawPlayerOnePlayerTemplateField(SerializedProperty playerOneGlassesSettingsProperty, SerializedProperty playerTwoGlassesSettingsProperty,
+            SerializedProperty playerThreeGlassesSettingsProperty, SerializedProperty playerFourGlassesSettingsProperty)
+        {
+            var playerTemplateProperty = playerOneGlassesSettingsProperty.FindPropertyRelative("playerTemplate");
+
+            // Determine which players need to have changes propagated to them
+            var copyToPlayerTwo = playerTwoGlassesSettingsProperty.FindPropertyRelative("copyPlayerOnePlayerTemplate").boolValue;
+            var copyToPlayerThree = playerThreeGlassesSettingsProperty.FindPropertyRelative("copyPlayerOnePlayerTemplate").boolValue;
+            var copyToPlayerFour = playerFourGlassesSettingsProperty.FindPropertyRelative("copyPlayerOnePlayerTemplate").boolValue;
+            var copyToAnyPlayer = copyToPlayerTwo || copyToPlayerThree || copyToPlayerFour;
+
+            using (new EditorGUILayout.HorizontalScope())   // Bundle up the object template field and toggle button side by side.
+            {
+                // Draw the object template field
+                EditorGUILayout.PropertyField(playerTemplateProperty, playerTemplateLabel, GUILayout.ExpandWidth(true));
+
+                // Draw the info icon, and set its enabled status if any player is copying this setting from player 1
+                using (new EditorGUI.DisabledGroupScope(!copyToAnyPlayer))
+                {
+                    SettingsDrawingHelper.DrawSettingSharedToggle(copyToAnyPlayer);
+                }
+            }
+
+
+            // Propagate the object template to any players that need it
+            playerTemplateProperty.TryExportObjectReference(playerTwoGlassesSettingsProperty.FindPropertyRelative("playerTemplate"), copyToPlayerTwo);
+            playerTemplateProperty.TryExportObjectReference(playerThreeGlassesSettingsProperty.FindPropertyRelative("playerTemplate"), copyToPlayerThree);
+            playerTemplateProperty.TryExportObjectReference(playerFourGlassesSettingsProperty.FindPropertyRelative("playerTemplate"), copyToPlayerFour);
+
+           }
+
+        /// <summary>
+        /// Draw the object template field for any player other than Player One for the multiplayer TiltFiveManager
+        /// </summary>
+        /// <param name="glassesSettingsProperty"></param>
+        /// <param name="playerOneGlassesSettingsProperty"></param>
+        private static void DrawRemainingPlayersPlayerTemplateField(SerializedProperty glassesSettingsProperty, SerializedProperty playerOneGlassesSettingsProperty)
+        {
+            var playerTemplateProperty = glassesSettingsProperty.FindPropertyRelative("playerTemplate");
+
+            using (new EditorGUILayout.HorizontalScope())   // Bundle up the object template field and toggle button side by side.
+            {
+                var copyPlayerTemplateProperty = glassesSettingsProperty.FindPropertyRelative("copyPlayerOnePlayerTemplate");
+
+                // Disable the object template field if we're copying from Player 1
+                using (new EditorGUI.DisabledGroupScope(copyPlayerTemplateProperty.boolValue))
+                {
+                    // Draw the object template field
+                    EditorGUILayout.PropertyField(playerTemplateProperty, playerTemplateLabel, GUILayout.ExpandWidth(true));
+                }
+
+                // Draw the lock toggle button indicating whether we want to copy this setting from Player One
+                copyPlayerTemplateProperty.boolValue = SettingsDrawingHelper.DrawSettingLockToggle(copyPlayerTemplateProperty.boolValue);
+
+                // Copy object template from Player 1 if necessary
+                playerOneGlassesSettingsProperty.FindPropertyRelative("playerTemplate").TryExportObjectReference(playerTemplateProperty, copyPlayerTemplateProperty.boolValue);
+            }
+        }
+        
+        #endregion Input Template
+
+#endif // UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
 
         #region Culling Mask
 
@@ -818,12 +917,12 @@ namespace TiltFive
 
             var friendlyNameProperty = glassesSettingsProperty.FindPropertyRelative("friendlyName");
             var friendlyName = friendlyNameProperty.stringValue;
-            if(!Glasses.glassesAvailable || string.IsNullOrWhiteSpace(friendlyName))
+            if(!Player.IsConnected(PlayerIndex.One) || string.IsNullOrWhiteSpace(friendlyName))
             {
                 friendlyName = "N/A";
             }
 
-            EditorGUILayout.LabelField($"Status: {(Glasses.glassesAvailable ? "Ready" : "Unavailable")}");
+            EditorGUILayout.LabelField($"Status: {(Player.IsConnected(PlayerIndex.One) ? "Ready" : "Unavailable")}");
             EditorGUILayout.LabelField($"Friendly Name: {friendlyName}");
         }
 

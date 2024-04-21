@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,10 +360,10 @@ namespace TiltFive
             // We move the eye Cameras in the Editor to emulate head pose and eye movement.
             // In builds, we only set the camera transforms with Glasses tracking data.
 
-            if (null == cameraTemplate)
+            if (null == cameraTemplate || !Player.TryGetPlayerIndex(glassesHandle, out PlayerIndex playerIndex))
                 return;
 
-            if (!Glasses.updated)
+            if (!Glasses.IsTracked(playerIndex))
             {
                 GameObject pose = headPose;
                 // left eye copy and adjust

@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 using System;
-using System.Runtime.InteropServices;
 using UnityEngine;
 
 using TiltFive.Logging;
@@ -95,16 +94,6 @@ namespace TiltFive
             QualitySettings.maxQueuedFrames = 0;
         }
 
-        void Start()
-        {
-
-        }
-
-        void Update()
-        {
-
-        }
-
         private void LogVersion()
         {
             string version = "NOT VERSIONED";
@@ -141,108 +130,10 @@ namespace TiltFive
             Debug.unityLogger.logEnabled = logEnabled;
         }
 
+        [Obsolete("This function has been moved into TiltFive.SystemControl")]
         public static bool SetApplicationInfo()
         {
-            return Instance.SetApplicationInfoImpl();
-        }
-
-        private bool SetApplicationInfoImpl()
-        {
-            string applicationName = Application.productName;
-#if UNITY_EDITOR
-            // TODO: Localize
-            applicationName = $"Unity Editor: {applicationName}";
-#endif
-            string applicationId = Application.identifier;
-            string productVersion = Application.version;
-            string engineVersion = Application.unityVersion;
-            TextAsset pluginVersionAsset = (TextAsset)Resources.Load("pluginversion");
-            string applicationVersionInfo = $"App: {productVersion}, Engine: {engineVersion}, T5 SDK: {pluginVersionAsset.text}";
-
-            int result = 1;
-
-            try
-            {
-                using (T5_StringUTF8 appName = applicationName)
-                using (T5_StringUTF8 appId = applicationId)
-                using (T5_StringUTF8 appVersion = applicationVersionInfo)
-                {
-                    result = NativePlugin.SetApplicationInfo(appName, appId, appVersion);
-                }
-            }
-            catch (System.DllNotFoundException e)
-            {
-                Log.Info("Could not connect to Tilt Five plugin to register project info: {0}", e);
-            }
-            catch (Exception)
-            {
-                Log.Error("Failed to register project info with the Tilt Five service.");
-            }
-
-            return result == 0;
-        }
-
-        internal static bool SetPlatformContext()
-        {
-            return Instance.SetPlatformContextImpl();
-        }
-
-        private bool SetPlatformContextImpl()
-        {
-            // Ensure the current thread is attached to the JVM
-            AndroidJNI.AttachCurrentThread();
-
-            IntPtr unityPlayerClazz = AndroidJNI.FindClass("com/unity3d/player/UnityPlayer");
-            if (unityPlayerClazz == IntPtr.Zero) {
-                Log.Error("Failed to obtain UnityPlayer class via JNI");
-                return false;
-            }
-
-            IntPtr currentActivityFieldId = AndroidJNI.GetStaticFieldID(unityPlayerClazz, "currentActivity", "Landroid/app/Activity;");
-            if (currentActivityFieldId == IntPtr.Zero) {
-                Log.Error("Failed to obtain UnityPlayer/currentActivity field via JNI");
-                return false;
-            }
-
-            IntPtr currentActivity = AndroidJNI.GetStaticObjectField(unityPlayerClazz, currentActivityFieldId);
-            if (currentActivity == IntPtr.Zero) {
-                Log.Error("Failed to obtain UnityPlayer/currentActivity instance via JNI");
-                return false;
-            }
-
-            IntPtr t5ActivityClazz = AndroidJNI.FindClass("com/tiltfive/client/TiltFiveActivity");
-            if (t5ActivityClazz == IntPtr.Zero) {
-                Log.Error("Failed to obtain TiltFive activity class via JNI");
-                return false;
-            }
-
-            IntPtr getPlatformContextMethodId = AndroidJNI.GetMethodID(t5ActivityClazz, "getT5PlatformContext", "()J");
-            if (getPlatformContextMethodId == IntPtr.Zero) {
-                Log.Error("Failed to obtain TiltFive getT5PlatformContext() method via JNI");
-                return false;
-            }
-
-            var context = AndroidJNI.CallLongMethod(currentActivity, getPlatformContextMethodId, new jvalue[] {});
-            if (context == 0) {
-                Log.Error("Failed to obtain TiltFive platform context via JNI");
-                return false;
-            }
-
-            // If we obtained a context from Java, send it to native
-            try {
-                int result = NativePlugin.SetPlatformContext(new IntPtr(context));
-                if (result != 0) {
-                    Log.Error("Tilt Five platform context set returned error: {0}", result);
-                }
-            } catch (System.DllNotFoundException e) {
-                Log.Info("Tilt Five plugin unavailable for set platform context: {0}", e);
-                return false;
-            } catch (Exception e) {
-                Log.Error("Failed to set Tilt Five platform context: {0}", e);
-                return false;
-            }
-
-            return true;
+            return SystemControl.SetApplicationInfo();
         }
 
         /// <summary>Get whether any glasses are available</summary>
@@ -383,7 +274,7 @@ namespace TiltFive
             frameInfo.RotToRVC_GBD = rotToRVC_GBD;
             frameInfo.PosOfRVC_GBD = posOfRVC_GBD;
 
-            int result = 1;
+            int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
             try
             {
                 result = NativePlugin.QueueStereoImages(glassesHandle, frameInfo);
@@ -393,7 +284,7 @@ namespace TiltFive
                 Log.Error(e.Message);
             }
 
-            if (result != 0) {
+            if (result != NativePlugin.T5_RESULT_SUCCESS) {
                 return false;
             }
 
@@ -439,12 +330,12 @@ namespace TiltFive
 
         private bool GetDisplayDimensionsImpl(ref Vector2Int displayDimensions)
         {
-            int result = 1;
+            int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
             try
             {
                 result = NativePlugin.GetMaxDisplayDimensions(_displaySettings);
 
-                if(result == 0)
+                if(result == NativePlugin.T5_RESULT_SUCCESS)
                 {
                     displayDimensions = new Vector2Int(_displaySettings[0], _displaySettings[1]);
                 }
@@ -455,7 +346,7 @@ namespace TiltFive
                 Log.Error(e.Message);
             }
 
-            return (0 == result);
+            return result == NativePlugin.T5_RESULT_SUCCESS;
         }
 
         public static bool GetGlassesIPD(UInt64 glassesHandle, ref float glassesIPD)
@@ -465,12 +356,12 @@ namespace TiltFive
 
         private bool GetGlassesIPDImpl(UInt64 glassesHandle, ref float glassesIPD)
         {
-            int result = 1;
+            int result = NativePlugin.T5_RESULT_UNKNOWN_ERROR;
             try
             {
                 result = NativePlugin.GetGlassesIPD(glassesHandle, ref glassesIPD);
 
-                if(result != 0 && GetGlassesAvailability())
+                if(result != NativePlugin.T5_RESULT_SUCCESS && GetGlassesAvailability())
                 {
                     Log.Warn("Display.cs: Failed to retrieve glasses IPD");
                 }
@@ -480,7 +371,23 @@ namespace TiltFive
                 Log.Error(e.Message);
             }
 
-            return (0 == result);
+            return result == NativePlugin.T5_RESULT_SUCCESS;
+        }
+
+        internal static void ApplyGraphicsSettings(GraphicsSettings graphicsSettings)
+        {
+            // If we are optimizing the framerate and a player is connected, overwrite the application's target framerate and vsync settings.
+            if (graphicsSettings.matchGlassesFramerate && Player.TryGetFirstConnectedPlayer(out var anyPlayer))
+            {
+                Application.targetFrameRate = GraphicsSettings.PREFERRED_GLASSES_FRAMERATE;
+                QualitySettings.vSyncCount = GraphicsSettings.VSYNC_DISABLED;
+            }
+            // Otherwise, restore them to the settings we observed during Awake()
+            else
+            {
+                Application.targetFrameRate = graphicsSettings.applicationTargetFramerate;
+                QualitySettings.vSyncCount = graphicsSettings.applicationVSyncCount;
+            }
         }
     }
 

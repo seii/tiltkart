@@ -35,6 +35,7 @@ public class ObjectiveCompleteLaps : Objective
         TimeDisplay.OnSetLaps(lapsToComplete);
         yield return new WaitForEndOfFrame();
         Register();
+        UpdateObjective(string.Empty, string.Empty, title);
     }
 
     protected override void ReachCheckpoint(int remaining)

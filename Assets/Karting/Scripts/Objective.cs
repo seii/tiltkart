@@ -39,7 +39,7 @@ public abstract class Objective : MonoBehaviour
     public bool isCompleted { get; protected set; }
     public bool isBlocking() => !(isOptional || isCompleted);
 
-    public UnityAction<UnityActionUpdateObjective> onUpdateObjective;
+    public static UnityAction<UnityActionUpdateObjective> onUpdateObjective;
 
     protected NotificationHUDManager m_NotificationHUDManager;
     protected ObjectiveHUDManger m_ObjectiveHUDManger;
@@ -127,6 +127,8 @@ public abstract class Objective : MonoBehaviour
         // removes the pickup from the list, so that we can keep track of how many are left on the map
         if (pickupCollected.gameMode == GameMode.Laps)
         {
+            Debug.Log($"Unregistering {pickupCollected.gameMode} item {pickupCollected.name}");
+
             pickupCollected.active = false;
 
             LapObject lapObject = (LapObject) pickupCollected;

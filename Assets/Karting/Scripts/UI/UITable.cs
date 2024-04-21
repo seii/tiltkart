@@ -42,6 +42,7 @@ public class UITable : MonoBehaviour
         RectTransform hi = GetComponent<RectTransform>();
 
         float height = 0;
+
         for (int i = 0; i < childCount; i++)
         {
             RectTransform child = transform.GetChild(i).GetComponent<RectTransform>();
@@ -52,7 +53,8 @@ public class UITable : MonoBehaviour
             Vector2 newPos = Vector2.zero;
             
             newPos.y = height;
-            newPos.x = 0;//-child.pivot.x * size.x * hi.localScale.x;
+            //newPos.x = 0;
+            newPos.x = -child.pivot.x * size.x * hi.localScale.x;
             child.anchoredPosition = newPos;
         }
     }

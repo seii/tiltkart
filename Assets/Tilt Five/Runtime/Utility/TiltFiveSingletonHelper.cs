@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,6 +48,27 @@ namespace TiltFive
             {
                 sceneInfo = TiltFiveManager.Instance;
                 return true;
+            }
+
+            // The TiltFiveManager2 or TiltFiveManager won't appear to be instantiated
+            // until their Awake() functions are called. If we're calling from the editor
+            // outside of play mode, just scan the scene.
+            // Presumably this is being called from a menu script, gizmo, etc.
+            if (!Application.isPlaying)
+            {
+                var tiltFiveManager2 = GameObject.FindObjectOfType<TiltFiveManager2>();
+                if (tiltFiveManager2 != null)
+                {
+                    sceneInfo = tiltFiveManager2;
+                    return true;
+                }
+
+                var tiltFiveManager = GameObject.FindObjectOfType<TiltFiveManager>();
+                if (tiltFiveManager != null)
+                {
+                    sceneInfo = tiltFiveManager;
+                    return true;
+                }
             }
 
             sceneInfo = null;

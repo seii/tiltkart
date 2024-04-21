@@ -618,6 +618,7 @@ MonoBehaviour:
   counterTextContent: {fileID: 3993212941919963076}
   subTitleRect: {fileID: 6432594071663689832}
   canvasGroup: {fileID: 9184591652781532047}
+  persistenceDelay: 0
   completionDelay: 0.35
   fadeInDuration: 0.5
   fadeOutDuration: 2

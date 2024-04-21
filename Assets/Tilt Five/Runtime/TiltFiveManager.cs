@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,6 +94,11 @@ namespace TiltFive
         public SpectatorSettings spectatorSettings = new SpectatorSettings();
 
         /// <summary>
+        /// Project-wide graphics settings related to Tilt Five.
+        /// </summary>
+        public GraphicsSettings graphicsSettings = new GraphicsSettings();
+
+        /// <summary>
         /// The log settings.
         /// </summary>
         public LogSettings logSettings = new LogSettings();
@@ -109,8 +114,7 @@ namespace TiltFive
         private bool needsDriverUpdateNotifiedOnce = false;
         private bool needsDriverUpdateErroredOnce = false;
 
-        [SerializeField]
-        private PlayerSettings playerSettings = new PlayerSettings();
+        internal PlayerSettings playerSettings = new PlayerSettings();
 
         /// <summary>
         /// Awake this instance.
@@ -123,15 +127,17 @@ namespace TiltFive
             Log.LogLevel = logSettings.level;
             Log.TAG = logSettings.TAG;
 
-            if (Application.platform == RuntimePlatform.Android)
+            // Store graphics settings
+            graphicsSettings.applicationTargetFramerate = Application.targetFrameRate;
+            graphicsSettings.applicationVSyncCount = QualitySettings.vSyncCount;
+
+            if (!SystemControl.SetPlatformContext())
             {
-                if (!Display.SetPlatformContext()) {
-                    Log.Warn("Failed to set application context.");
-                    enabled = false;
-                }
+                Log.Warn("Failed to set application context.");
+                enabled = false;
             }
 
-            if (!Display.SetApplicationInfo())
+            if (!SystemControl.SetApplicationInfo())
             {
                 Log.Warn("Failed to send application info to the T5 Service.");
                 enabled = false;
@@ -184,7 +190,9 @@ namespace TiltFive
             Player.ScanForNewPlayers();
             Wand.GetLatestInputs();     // Should only be executed once per frame
 #endif
+            RefreshPlayerSettings();
             RefreshSpectatorSettings();
+            Display.ApplyGraphicsSettings(graphicsSettings);
             Player.Update(playerSettings, spectatorSettings);
 
             var spectatedPlayer = spectatorSettings.spectatedPlayer;
@@ -240,9 +248,9 @@ namespace TiltFive
         /// </summary>
         private void GetLatestPoseData()
         {
-            Glasses.Update(glassesSettings, scaleSettings, gameBoardSettings);
-            Wand.Update(leftWandSettings, scaleSettings, gameBoardSettings);
-            Wand.Update(rightWandSettings, scaleSettings, gameBoardSettings);
+            Glasses.UpdateAllGlassesCores(glassesSettings, scaleSettings, gameBoardSettings);
+            Wand.Update(PlayerIndex.One, leftWandSettings, scaleSettings, gameBoardSettings);
+            Wand.Update(PlayerIndex.One, rightWandSettings, scaleSettings, gameBoardSettings);
         }
 
         /// <summary>
@@ -262,7 +270,7 @@ namespace TiltFive
             {
                 try
                 {
-                    ServiceCompatibility compatibility = NativePlugin.GetServiceCompatibility();
+                    ServiceCompatibility compatibility = SystemControl.GetServiceCompatibility();
                     bool needsUpdate = compatibility == ServiceCompatibility.Incompatible;
 
                     if (needsUpdate)
@@ -319,7 +327,7 @@ namespace TiltFive
                 Log.Error(e.Message);
             }
 
-            Glasses.Reset(glassesSettings);
+            Glasses.Reset(PlayerIndex.None, glassesSettings);
 
 #if UNITY_2019_1_OR_NEWER && INPUTSYSTEM_AVAILABLE
             InputSystem.onBeforeUpdate += OnBeforeUpdate;

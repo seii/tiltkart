@@ -23,6 +23,8 @@ public class ObjectiveToast : MonoBehaviour
    // public HorizontalOrVerticalLayoutGroup layoutGroup;
 
     [Header("Transitions")]
+    [Tooltip("Delay before fading (0.0 to disable fade)")]
+    public float persistenceDelay = 0.0f;
     [Tooltip("Delay before moving complete")]
     public float completionDelay;
     [Tooltip("Duration of the fade in")]
@@ -55,7 +57,7 @@ public class ObjectiveToast : MonoBehaviour
     AudioSource m_AudioSource;
     RectTransform m_RectTransform;
 
-    public void Initialize(string titleText, string descText, string counterText, bool isOptionnal, float delay)
+    public void Initialize(string titleText, string descText, string counterText, bool isOptional, float fadeDelay)
     {
         // set the description for the objective, and forces the content size fitter to be recalculated
         Canvas.ForceUpdateCanvases();
@@ -71,7 +73,7 @@ public class ObjectiveToast : MonoBehaviour
         LayoutRebuilder.ForceRebuildLayoutImmediate(m_RectTransform);
        
 
-        m_StartFadeTime = Time.time + delay;
+        m_StartFadeTime = Time.time + fadeDelay;
         // start the fade in
         m_IsFadingIn = true;
         m_IsMovingIn = true;
@@ -168,6 +170,17 @@ public class ObjectiveToast : MonoBehaviour
             else
             {
                 m_IsMovingOut = false;
+            }
+        }
+
+        // If a persistence delay has been set, fade out the objective after that delay elapses
+        if (!m_IsFadingOut && !m_IsFadingIn && persistenceDelay > 0.0)
+        {
+            float timeObjectHasExisted = timeSinceFadeStarted + fadeInDuration + persistenceDelay;
+
+            if(Time.time - timeObjectHasExisted > 0)
+            {
+                m_IsFadingOut = true;
             }
         }
     }

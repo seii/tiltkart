@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (C) 2020-2022 Tilt Five, Inc.
+ * Copyright (C) 2020-2023 Tilt Five, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,16 +48,16 @@ namespace TiltFive
 		private ScaleSettings scaleSettings;
 		private GameBoardSettings gameBoardSettings;
 		private float scaleToUWRLD_UGBD => scaleSettings.GetScaleToUWRLD_UGBD(gameBoardSettings.gameBoardScale);
-		private GameBoard.GameboardDimensions gameboardDimensions = new GameBoard.GameboardDimensions
-		{
-			playableSpaceX = new Length(0.7f, LengthUnit.Meters),
-			playableSpaceY = new Length(0.7f, LengthUnit.Meters),
-			borderWidth = new Length(0.05f, LengthUnit.Meters)
-		};
-		private float totalGameBoardWidthInMeters => gameboardDimensions.totalSpaceX.ToMeters;
-		private float totalGameBoardLengthInMeters => gameboardDimensions.totalSpaceY.ToMeters;
-		private float usableGameBoardWidthInMeters => gameboardDimensions.playableSpaceX.ToMeters;
-		private float usableGameBoardLengthInMeters => gameboardDimensions.playableSpaceY.ToMeters;
+		private GameBoard.GameboardExtents gameboardExtents = new GameBoard.GameboardExtents(
+			GameBoard.GameboardExtents.GAMEBOARD_SIZE_LE);
+
+		private float totalGameBoardWidthInMeters =>
+			usableGameBoardWidthInMeters + 2f * GameBoard.GameboardExtents.BORDER_WIDTH_IN_METERS;
+		private float totalGameBoardLengthInMeters =>
+			usableGameBoardLengthInMeters + 2f * GameBoard.GameboardExtents.BORDER_WIDTH_IN_METERS;
+
+		private float usableGameBoardWidthInMeters => gameboardExtents.ViewableSpanX.ToMeters;
+		private float usableGameBoardLengthInMeters => gameboardExtents.ViewableSpanZ.ToMeters;
 
 		private GameboardType gameboardType;
 
@@ -102,13 +102,13 @@ namespace TiltFive
 
 
 		private void Configure(ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings,
-			float alpha, float gridOffsetY, GameBoard.GameboardDimensions gameboardDimensions)
+			float alpha, float gridOffsetY, GameBoard.GameboardExtents gameboardExtents)
 		{
 			this.scaleSettings = scaleSettings;
 			this.gameBoardSettings = gameBoardSettings;
 			this.gizmoAlpha = alpha;
 			this.yGridOffset = gridOffsetY;
-			this.gameboardDimensions = gameboardDimensions;
+			this.gameboardExtents = gameboardExtents;
 
 			if (meshObj_LE == null || meshBorder_LE == null || meshSurface_LE == null)
 			{
@@ -177,7 +177,7 @@ namespace TiltFive
 
 			if(null == meshRuler || gameboardTypeChanged)
 			{
-				ConstructRulerMesh(gameboardDimensions.totalSpaceX, "meshRuler", out meshRuler);
+				ConstructRulerMesh(gameboardExtents.ViewableSpanX, "meshRuler", out meshRuler);
 			}
 		}
 
@@ -363,7 +363,7 @@ namespace TiltFive
 		public void Draw(ScaleSettings scaleSettings, GameBoardSettings gameBoardSettings,
 			float alpha, bool showGrid, float gridOffsetY = 0f)
 		{
-			Configure (scaleSettings, gameBoardSettings, alpha, gridOffsetY, gameboardDimensions);
+			Configure (scaleSettings, gameBoardSettings, alpha, gridOffsetY, gameboardExtents);
 
 			if (null == gameBoardSettings) { return; }
 
@@ -433,23 +433,23 @@ namespace TiltFive
 		private void DrawLogo()
 		{
 			var logoDiameter = 2.5f;			// The logo mesh is about 12cm when imported. 2.5cm is better.
-			var logoRadius = logoDiameter / 2;	// 1.25cm diameter logo
-			var borderThickness = gameboardDimensions.borderWidth.ToCentimeters;
-			var gameBoardFrontExtent = -gameBoardSettings.currentGameBoard.transform.forward / 2;
-			var gameBoardRightExtent = gameBoardSettings.currentGameBoard.transform.right / 2;
+			var logoRadius = logoDiameter / 2f;	// 1.25cm diameter logo
+			var borderThickness = new Length(GameBoard.GameboardExtents.BORDER_WIDTH_IN_METERS,  LengthUnit.Meters).ToCentimeters;
+			var gameBoardFrontExtent = -gameBoardSettings.currentGameBoard.transform.forward / 2f;
+			var gameBoardRightExtent = gameBoardSettings.currentGameBoard.transform.right / 2f;
 
 			// Starting in the front-right corner...
 			var logoPosition = (gameBoardRightExtent + gameBoardFrontExtent)  * usableGameBoardWidthInMeters;
 			// ...move the logo left 5cm and center it on the game board border.
 			var oneCentimeterLengthInMeters = new Length(1, LengthUnit.Centimeters).ToMeters;
-			logoPosition -= gameBoardSettings.currentGameBoard.transform.right * 5 * oneCentimeterLengthInMeters;
+			logoPosition -= gameBoardSettings.currentGameBoard.transform.right * 5f * oneCentimeterLengthInMeters;
 			logoPosition -= gameBoardSettings.currentGameBoard.transform.forward * ((borderThickness / 2) - logoRadius) * oneCentimeterLengthInMeters;
 
 			var contentScaleFactor = scaleToUWRLD_UGBD;
 			Matrix4x4 mtxOrigin = Matrix4x4.TRS( Vector3.zero, Quaternion.identity, Vector3.one );
-			var mtxWorld = Matrix4x4.TRS( gameBoardSettings.gameBoardCenter + logoPosition / contentScaleFactor,
+			var mtxWorld = Matrix4x4.TRS( gameBoardSettings.gameBoardCenter + logoPosition * contentScaleFactor,
 				gameBoardSettings.currentGameBoard.rotation,
-				logoDiameter * Vector3.one / contentScaleFactor );
+				logoDiameter * Vector3.one * contentScaleFactor );
 			Matrix4x4 mtxPreTransform = Matrix4x4.TRS( Vector3.zero, Quaternion.Euler(-90.0f, 180.0f, 0.0f), Vector3.one );
 			Gizmos.matrix = mtxOrigin * mtxWorld * mtxPreTransform;
 
@@ -467,7 +467,7 @@ namespace TiltFive
         {
 			var contentScaleFactor = scaleToUWRLD_UGBD;
             float heightOffsetInMeters = yGridOffset * scaleSettings.oneUnitLengthInMeters;
-			float lengthOffsetInMeters = Mathf.Max(gameboardDimensions.playableSpaceY.ToMeters - gameboardDimensions.playableSpaceX.ToMeters, 0f) / 2f;
+			float lengthOffsetInMeters = Mathf.Max(usableGameBoardLengthInMeters - usableGameBoardWidthInMeters, 0f) / 2f;
 
 			var gameBoardTransform = gameBoardSettings.currentGameBoard.transform;
 
@@ -667,7 +667,7 @@ namespace TiltFive
 			Gizmos.color = new Color (1f, 0.8320962f, 0.3803922f, gizmoAlpha);
 
 			var contentScaleFactor = scaleToUWRLD_UGBD;
-			float borderWidthInMeters = gameboardDimensions.borderWidth.ToMeters;
+			float borderWidthInMeters = GameBoard.GameboardExtents.BORDER_WIDTH_IN_METERS;
 			float lengthOffsetInMeters = Mathf.Max(usableGameBoardLengthInMeters - usableGameBoardWidthInMeters, 0f) / 2f;
 			var gameBoardTransform = gameBoardSettings.currentGameBoard.transform;
 			var gameboardCenter = gameBoardSettings.gameBoardCenter;

@@ -1,6 +1,6 @@
 # TiltKart
 
-This Unity-based game is intended to fully develop the [Karting Microgame](https://learn.unity.com/project/karting-template) sample provided as a tutorial by Unity while also making it compatible with the [TiltFive](https://www.tiltfive.com/) augmented reality system. The Unity example project provides many assets like multiple tracks and game modes which are not actually covered by the tutorial but can be fully implemented without adding any additional assets.
+This Unity-based game is intended to flesh out the [Karting Microgame](https://learn.unity.com/project/karting-template) sample provided as a tutorial by Unity as an example of making a pre-existing game compatible with the [TiltFive](https://www.tiltfive.com/) augmented reality system. The Unity example project provides many assets like multiple tracks and game modes which are not actually covered by the original tutorial. These items will be used more fully in this project.
 
 ## Added Features
 - NPC racers

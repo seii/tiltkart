@@ -19,7 +19,7 @@ This Unity-based game is intended to provide an example of making a pre-existing
    - Oval
    - Winding
 - Non-Keyboard Input
-   - TiltFive Wand Controller (only in "controller mode")
+   - TiltFive Wand Controller (in both "wand" and "controller" modes)
    - Android touchscreen
    - Gamepad
 

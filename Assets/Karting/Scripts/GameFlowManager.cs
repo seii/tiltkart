@@ -43,7 +43,7 @@ public class GameFlowManager : MonoBehaviour
     public bool autoFindKarts = true;
     public ArcadeKart playerKart;
 
-    ArcadeKart[] karts;
+    List<ArcadeKart> karts;
     ObjectiveManager m_ObjectiveManager;
     TimeManager m_TimeManager;
     float m_TimeLoadEndGameScene;
@@ -52,19 +52,31 @@ public class GameFlowManager : MonoBehaviour
 
     private bool isStarted;
 
+    void OnEnable()
+    {
+        //print($"{thisClass}: BeginEnable");
+    }
+
     void Start()
     {
         ObjectiveManager.allObjectivesComplete += AllObjectivesComplete;
 
+        print($"{thisClass}: isStarted = {isStarted}");
         if (!isStarted)
         {
             isStarted = true;
+            karts = new List<ArcadeKart>(2);
 
-            karts = FindObjectsOfType<ArcadeKart>();
+            ArcadeKart[] tempKarts = FindObjectsOfType<ArcadeKart>();
+            print($"{thisClass}: tempKarts length = {tempKarts.Length}");
+            if(tempKarts.Length > 0)
+            {
+                karts.AddRange(tempKarts);
+            }
 
             if (autoFindKarts)
             {
-                if (karts.Length > 0)
+                if (karts.Count > 0)
                 {
                     if (!playerKart) playerKart = karts[0];
                 }
@@ -75,6 +87,7 @@ public class GameFlowManager : MonoBehaviour
             DebugUtility.HandleErrorIfNullFindObject<ObjectiveManager, GameFlowManager>(m_ObjectiveManager, this);
 
             m_TimeManager = FindObjectOfType<TimeManager>();
+            //print($"{thisClass}: Found timemanager {m_TimeManager.name}");
             DebugUtility.HandleErrorIfNullFindObject<TimeManager, GameFlowManager>(m_TimeManager, this);
 
             // Audio seems very loud, reduce it from default value of "1"
@@ -84,17 +97,17 @@ public class GameFlowManager : MonoBehaviour
             {
                 msg.gameObject.SetActive(false);
             }
-            //winDisplayMessage.gameObject.SetActive(false);
 
             foreach (DisplayMessage msg in loseDisplayMessage)
             {
                 msg.gameObject.SetActive(false);
             }
-            //loseDisplayMessage.gameObject.SetActive(false);
 
             m_TimeManager.StopRace();
+
             foreach (ArcadeKart k in karts)
             {
+                print($"{thisClass}: Stopping kart {k.name} from moving");
                 k.SetCanMove(false);
             }
 
@@ -106,7 +119,7 @@ public class GameFlowManager : MonoBehaviour
         }
     }
 
-    private void OnDestroy()
+    private void OnDisable()
     {
         ObjectiveManager.allObjectivesComplete -= AllObjectivesComplete;
     }
@@ -120,9 +133,11 @@ public class GameFlowManager : MonoBehaviour
         print($"{thisClass}: Starting race");
         foreach (ArcadeKart k in karts)
         {
+            print($"{thisClass}: Allowing kart {k.name} to move");
             k.SetCanMove(true);
         }
 
+        Debug.Log($"{thisClass}: Telling time to start", m_TimeManager);
         m_TimeManager.StartRace();
     }
 
@@ -131,7 +146,6 @@ public class GameFlowManager : MonoBehaviour
         {
             dir.Play();
         }
-        //raceCountdownTrigger.Play();
     }
 
     IEnumerator ShowObjectivesRoutine() {
@@ -171,9 +185,27 @@ public class GameFlowManager : MonoBehaviour
                 if (Time.time >= m_TimeLoadEndGameScene)
                 {
                     print($"{thisClass}: Loading next level");
-                    SceneSwitcher.Instance.BeginLoad(m_SceneToLoad, true, true);
+                    SceneSwitcher.Instance.ReplaceCurrentScene(m_SceneToLoad, true);
                     gameState = GameState.Play;
                 }
+            }
+        }
+        else
+        {
+            if(!m_ObjectiveManager.isActiveAndEnabled)
+            {
+                m_ObjectiveManager = FindObjectOfType<ObjectiveManager>();
+            }
+            
+            if(!m_TimeManager.isActiveAndEnabled)
+            {
+                m_TimeManager = FindObjectOfType<TimeManager>();
+            }
+
+            if (m_TimeManager.IsFinite && m_TimeManager.IsOver)
+            {
+                print($"{thisClass}: Time is up");
+                EndGame(false);
             }
         }
         /*else
@@ -250,5 +282,11 @@ public class GameFlowManager : MonoBehaviour
     {
         print($"{thisClass}: Received AllObjectivesComplete signal");
         EndGame(win);
+    }
+
+    private void OnTimeUp()
+    {
+        print($"{thisClass}: Detected that time has run out");
+        EndGame(false);
     }
 }

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.17344199, g: 0.20830154, b: 0.25048196, a: 1}
+  m_IndirectSpecularColor: {r: 0.18028381, g: 0.22571477, b: 0.30692255, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -162,6 +162,7 @@ MonoBehaviour:
   m_InputActionsPerSecond: 10
   m_RepeatDelay: 0.5
   m_ForceModuleActive: 0
+  lastT5Orientation: 2
 --- !u!114 &8806853
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -227,7 +228,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   loadingSceneName: LoadingScene
-  firstSceneName: 
+  firstSceneName: IntroMenu
 --- !u!114 &281866219
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -240,7 +241,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4ccae3de1756dd345939c23a83e1310d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  LoggingEnabled: 1
+  LoggingEnabled: 0
 --- !u!4 &281866220
 Transform:
   m_ObjectHideFlags: 0
@@ -417,6 +418,26 @@ PrefabInstance:
         type: 3}
       propertyPath: editorSettings.selectedPlayerSettingsPanel
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6601963360236768345, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: allPlayerSettings.Array.data[0].glassesSettings.nearClipPlane
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6601963360236768345, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: allPlayerSettings.Array.data[1].glassesSettings.nearClipPlane
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6601963360236768345, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: allPlayerSettings.Array.data[2].glassesSettings.nearClipPlane
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 6601963360236768345, guid: ac17611f933f2524b8ee0a5036ffd429,
+        type: 3}
+      propertyPath: allPlayerSettings.Array.data[3].glassesSettings.nearClipPlane
+      value: 0.4
       objectReference: {fileID: 0}
     - target: {fileID: 6601963360236768345, guid: ac17611f933f2524b8ee0a5036ffd429,
         type: 3}

@@ -8,6 +8,7 @@ using UnityEngine;
  * Tracker for which Kart object is currently selected, and miscellaneous logic
  * to be executed when the Kart object is changed to a different Kart object
  */
+//[DefaultExecutionOrder(-1)]
 public class KartSelector : MonoBehaviour
 {
     public static event Action<GameObject> onKartChange;
@@ -30,8 +31,9 @@ public class KartSelector : MonoBehaviour
 
     private string thisClass = nameof(KartSelector);
 
-    private void Start()
+    private void OnEnable()
     {
+        //print($"{thisClass}: BeginEnable");
         CameraSwitcher.OnCameraChange += CheckCurrentCamera;
 
         // Capture the most recent instance of TiltFiveProperties
@@ -46,7 +48,10 @@ public class KartSelector : MonoBehaviour
         {
             cameras.Add(board);
         }
+    }
 
+    private void Start()
+    {
         SwitchKart(kartName);
     }
 
@@ -64,6 +69,7 @@ public class KartSelector : MonoBehaviour
 
     private void SwitchKart(string kartName)
     {
+        print($"{thisClass}: Starting SwitchKart");
         // Set default to first kart if no preference is found
         if (string.IsNullOrEmpty(kartName))
         {
@@ -107,7 +113,10 @@ public class KartSelector : MonoBehaviour
         print($"{thisClass}: Invoking change to {currentKart.name}");
         onKartChange?.Invoke(currentKart.gameObject);
 
-        SimpleFollow[] followList = FindObjectsOfType<SimpleFollow>();
+        // SimpleFollow objects are unlikely to be active yet when this method is
+        // called, so search for all objects of this type, including inactive ones
+        SimpleFollow[] followList = FindObjectsOfType<SimpleFollow>(true);
+        print($"{thisClass}: Found {followList.Length} SimpleFollow objects");
 
         for(int i = 0; i < followList.Length; i++)
         {
@@ -116,7 +125,7 @@ public class KartSelector : MonoBehaviour
 
         if (properties != null)
         {
-            print($"{thisClass}: TiltFive board follow object {currentKart.name} detected");
+            //print($"{thisClass}: TiltFive board follow object {currentKart.name} detected");
             properties.UpdateFollowObject(currentKart.gameObject);
         }
     }

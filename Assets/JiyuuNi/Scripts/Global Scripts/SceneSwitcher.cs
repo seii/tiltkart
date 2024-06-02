@@ -10,8 +10,8 @@ using UnityEngine.SceneManagement;
  */
 public class SceneSwitcher : Singleton<SceneSwitcher>
 {
-    public static event Action<string, bool> sceneLoading;
-    public static event Action<string> sceneUnloading;
+    //public static event Action<string, bool> sceneLoading;
+    //public static event Action<string> sceneUnloading;
     public static event Action<float> loadProgress;
 
     [SerializeField]
@@ -24,22 +24,13 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
 
     private string rootSceneName;
     private string activeSceneName;
-    // List of all scenes which have been loaded, _except_ the scene
-    // this script is started in (the "root scene")
-    private List<string> loadedScenes = new List<string>();
-    //private bool isStarted = false;
     private AsyncOperation loadingOperation = null;
 
     private Dictionary<string, AsyncOperation> pausedOperations = new Dictionary<string, AsyncOperation>(1);
 
     private string thisClass = nameof(SceneSwitcher);
 
-    /**
-     * <credit>
-     * Jasper Flick - Catlike Coding - https://catlikecoding.com
-     * </credit>
-     */
-    private void Start()
+    private void OnEnable()
     {
         SceneManager.sceneLoaded += SceneLoaded;
         SceneManager.sceneUnloaded += SceneUnloaded;
@@ -50,41 +41,35 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
         // TiltFive Unity SDK. It will work within this game because the SDK
         // has been modified appropriately, but would not exist in other project!
         Player.newPlayerAdded += NewPlayerAdded;
+    }
 
-        // Assumption: This script is started in the root scene
-        rootSceneName = SceneManager.GetActiveScene().name;
+    /**
+     * <credit>
+     * Jasper Flick - Catlike Coding - https://catlikecoding.com
+     * </credit>
+     */
+    private void Start()
+    {
+        print($"{thisClass}: Starting, attached to scene name: {this.gameObject.name}");
+
+        // Root scene = first loaded scene
+        rootSceneName = SceneManager.GetSceneAt(0).name;
+
         // Also track which scene is currently active
         activeSceneName = SceneManager.GetActiveScene().name;
-        print($"{thisClass}: Attached to scene name {rootSceneName}");
 
-        // If multiple scenes are already loaded in the Editor, make sure
-        // that they are tracked as such
-        for(int i = 0; i < SceneManager.sceneCount; i++)
+        // If multiple scenes are open in the Editor on launch, set the most recent as "active"
+        if(Application.isEditor)
         {
-            string tempSceneName = SceneManager.GetSceneAt(i).name;
-
-            if (tempSceneName != rootSceneName)
+            if(SceneManager.sceneCount > 1)
             {
-                print($"Scene {tempSceneName} already loaded in editor, adding it to loaded scenes");
-                loadedScenes.Add(tempSceneName);
+                SceneManager.SetActiveScene(SceneManager.GetSceneAt(SceneManager.sceneCount - 1));
             }
-        }        
+        }
 
         if (!string.IsNullOrEmpty(firstSceneName))
         {
-            BeginLoad(firstSceneName, false, false);
-        }
-
-        Scene mostRecentScene = GetRootScene();
-
-        if (SceneManager.sceneCount > 0)
-        {
-            mostRecentScene = SceneManager.GetSceneAt(SceneManager.sceneCount - 1);
-        }
-
-        if (!mostRecentScene.name.StartsWith(rootSceneName))
-        {
-            SceneManager.SetActiveScene(mostRecentScene);
+            StartCoroutine(LoadScene(firstSceneName));
         }
     }
 
@@ -101,66 +86,25 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
         Player.newPlayerAdded -= NewPlayerAdded;
     }
 
-    public void PreLoad(string sceneName)
-    {
-        print($"{thisClass}: Preloading {sceneName}");
-        StartCoroutine(PreloadScene(sceneName));
-    }
-
-    public void BeginLoad(string sceneName, bool loadingScreen, bool replaceActiveScene)
-    {
-        print($"{thisClass}: Beginning scene loading for {sceneName}");
-
-        // Check if the scene is valid to load
-        if (IsSceneInBuildSettings(sceneName))
-        {
-            print($"{thisClass}: Scene {sceneName} exists in build settings");
-
-            if (replaceActiveScene)
-            {
-                print($"{thisClass}: Received request to replace {activeSceneName} with {sceneName}");
-                //StartCoroutine(UnloadScene(activeSceneName));
-                BeginUnload(activeSceneName);
-            }
-
-            if (loadedScenes.Contains(sceneName))
-            {
-                print($"{thisClass}: Scene {sceneName} already loaded, skipping load");
-            }
-            else
-            {
-                print($"{thisClass}: Scene {sceneName} not already loaded, loading it now");
-                StartCoroutine(LoadScene(sceneName, loadingScreen));
-            }
-        }
-        else
-        {
-            print($"{thisClass}: Scene {sceneName} does NOT exist in build settings, skipping load");
-        }
-    }
-
-    public void BeginUnload(string sceneName)
-    {
-        print($"{thisClass}: Beginning scene unloading for {sceneName}");
-
-        // Check if the scene is valid to unload
-        foreach(string tempScene in loadedScenes)
-        {
-            if(tempScene.Equals(sceneName))
-            {
-                print($"{thisClass}: Scene {sceneName} confirmed as still loaded");
-                StartCoroutine(UnloadScene(sceneName));
-                break;
-            }else
-            {
-                print($"{thisClass}: Scene {sceneName} not loaded, skipping unload");
-            }
-        }
-    }
-
     public Scene GetRootScene()
     {
         return SceneManager.GetSceneByName(rootSceneName);
+    }
+
+    public void ReplaceCurrentScene(string newScene, bool useLoadingScreen)
+    {
+        print($"{thisClass}: Attempting to replace {activeSceneName} with {newScene}");
+
+        if(useLoadingScreen)
+        {
+            print($"{thisClass}: Loading screen requested, activating it now");
+            StartCoroutine(StartLoadingScreen(newScene));
+        }else
+        {
+            print($"{thisClass}: No loading screen requested, proceeding with replacement");
+            StartCoroutine(UnloadScene(activeSceneName));
+            StartCoroutine(LoadScene(newScene));
+        }
     }
 
     /**
@@ -196,6 +140,8 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
 
     private IEnumerator WaitForPlayerConnection(Scene oldActiveScene, PlayerIndex index)
     {
+        SceneManager.SetActiveScene(GetRootScene());
+
         // Glasses typically take a couple seconds to fully spin up, wait for this to happen
         yield return new Player.WaitUntilPlayerConnected(index);
 
@@ -209,7 +155,7 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
         print($"Found player Glasses object {glassesCameras}");
         SceneManager.MoveGameObjectToScene(glassesCameras, GetRootScene());
 
-        print($"{thisClass}: Player {index} fully activated, returning {oldActiveScene.name}");
+        print($"{thisClass}: Player {index} fully activated, returning to scene {oldActiveScene.name}");
         SceneManager.SetActiveScene(oldActiveScene);
     }
 
@@ -218,92 +164,100 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
      * Jasper Flick - Catlike Coding - https://catlikecoding.com
      * </credit>
      */
-    private IEnumerator LoadScene(string sceneName, bool loadingScreen)
+    public IEnumerator LoadScene(string sceneName)
     {
-        yield return null;
+        print($"{thisClass}: Beginning scene loading for {sceneName}");
 
-        print($"{thisClass}: Loading {sceneName} additively");
-        string loadingOutput = loadingScreen ? "requested, activating" : "not requested";
-        print($"{thisClass}: Loading screen {loadingOutput}");
-
-        sceneLoading?.Invoke(sceneName, loadingScreen);
-        enabled = false;
-
-        if(pausedOperations.Count > 0)
+        // Check if the scene is valid to load
+        if (IsSceneInBuildSettings(sceneName))
         {
-            string test = "";
-            foreach (string onetest in pausedOperations.Keys)
+            // Don't ever attempt to load the root scene
+            if(!sceneName.Equals(rootSceneName))
             {
-                test = string.Concat(test, ", ", onetest);
-            }
+                // No safeguard against re-loading is implemented here because the only
+                // way in `SceneManager` to "reload" a scene is to call "load" again
 
-            if (pausedOperations.ContainsKey(sceneName))
-            {
-                print($"{thisClass}: Found {sceneName} as a preloaded scene, activating it");
-
-                if (loadingScreen)
+                // Check first if the scene was pre-loaded and is just awaiting activation
+                if (pausedOperations.Count > 0)
                 {
-                    Debug.LogWarning($"{thisClass}: {sceneName} was already preloaded, skipping loading screen");
-                }
+                    string operationNames = "";
 
-                pausedOperations[sceneName].allowSceneActivation = true;
-                pausedOperations.Remove(sceneName);
-            }
-            else
-            {
-                
-                string[] loadingArray = new List<string>(pausedOperations.Keys).ToArray();
-                string firstLoading = loadingArray[0];
-                string loadingStrings = string.Join(", ", loadingArray);
-                Debug.LogWarning($"{thisClass}: The following scenes are queued for loading and " +
-                    $"block activation: '{test}'");
-            }
-
-            yield return null;
-        }else
-        {
-            if (loadingScreen)
-            {
-                // Load the loading screen first, then the actual scene after
-                SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
-                loadingOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-                loadingOperation.allowSceneActivation = false;
-
-                while (!loadingOperation.isDone)
-                {
-                    print($"{thisClass}: Loading progress for {sceneName}: {loadingOperation.progress * 100}%");
-                    loadProgress.Invoke(loadingOperation.progress);
-
-                    if (loadingOperation.progress >= 0.9f)
+                    foreach (string oneName in pausedOperations.Keys)
                     {
-                        loadingOperation.allowSceneActivation = true;
+                        operationNames = string.Concat(operationNames, ", ", oneName);
                     }
 
+                    if (pausedOperations.ContainsKey(sceneName))
+                    {
+                        print($"{thisClass}: Found {sceneName} as a preloaded scene, activating it");
+
+                        pausedOperations[sceneName].allowSceneActivation = true;
+                        /*pausedOperations.Remove(sceneName);
+                        yield return null;*/
+                        yield return pausedOperations[sceneName];
+                        yield return null;
+                        pausedOperations.Remove(sceneName);
+                        SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
+                        activeSceneName = sceneName;
+                    }
+                    else
+                    {
+                        string[] loadingArray = new List<string>(pausedOperations.Keys).ToArray();
+                        string firstLoading = loadingArray[0];
+                        string loadingStrings = string.Join(", ", loadingArray);
+                        Debug.LogWarning($"{thisClass}: The following scenes are queued for loading and " +
+                            $"block {sceneName} from activating: '{operationNames}'");
+                    }
+                }else
+                {
+                    yield return SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+
+                    // Wait one more frame to allow loading to finish...
                     yield return null;
+
+                    // ...then set the newly loaded scene as the active scene
+                    SceneManager.SetActiveScene(SceneManager.GetSceneByName(sceneName));
+                    activeSceneName = sceneName;
                 }
             }
-            else
+        }else
+        {
+            print($"{thisClass}: Scene {sceneName} does NOT exist in build settings, skipping load");
+        }
+    }
+
+    public IEnumerator UnloadScene(string sceneName)
+    {
+        // Never attempt to unload the root scene
+        if(!sceneName.Equals(rootSceneName))
+        {
+            print($"{thisClass}: Beginning scene unloading for {sceneName}");
+
+            bool alreadyLoaded = false;
+
+            for (int i = 0; i < SceneManager.sceneCount; i++)
             {
-                SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+                if (SceneManager.GetSceneAt(i).name.Equals(sceneName))
+                {
+                    print($"{thisClass}: Scene {sceneName} confirmed as still loaded, proceeding with unload");
+                    enabled = false;
+
+                    yield return SceneManager.UnloadSceneAsync(SceneManager.GetSceneByName(sceneName));
+
+                    enabled = true;
+                    alreadyLoaded = true;
+                    break;
+                }
+            }
+
+            if (!alreadyLoaded)
+            {
+                print($"{thisClass}: Scene {sceneName} not loaded, skipping unload");
             }
         }
-
-        loadingOperation = null;
-        enabled = true;
     }
 
-    private IEnumerator UnloadScene(string sceneName)
-    {
-        print($"{thisClass}: Unloading {sceneName}");
-        sceneUnloading?.Invoke(sceneName);
-        enabled = false;
-        SceneManager.UnloadSceneAsync(SceneManager.GetSceneByName(sceneName));
-        yield return null;
-
-        enabled = true;
-    }
-
-    private IEnumerator PreloadScene(string sceneName)
+    public IEnumerator PreloadScene(string sceneName)
     {
         print($"{thisClass}: Preloading {sceneName}");
 
@@ -323,20 +277,43 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
         }
     }
 
+    private IEnumerator StartLoadingScreen(string newScene)
+    {
+        print($"{thisClass}: Activating loading screen");
+
+        // Load the loading screen first, then the actual scene after
+        yield return SceneManager.LoadSceneAsync(loadingSceneName, LoadSceneMode.Additive);
+
+        yield return null;
+        yield return UnloadScene(activeSceneName);
+        SceneManager.SetActiveScene(SceneManager.GetSceneByName(loadingSceneName));
+
+        activeSceneName = loadingSceneName;
+
+        print($"{thisClass}: Loading screen active, watching progress for scene {newScene}");
+        yield return PreloadScene(newScene);
+
+        // Wait one extra frame for preloading to complete
+        yield return null;
+
+        // Activate new scene now that it's loaded
+        yield return LoadScene(newScene);
+
+        // Remember to unload loading scene
+        StartCoroutine(UnloadScene(loadingSceneName));
+    }
+
     private void SceneLoaded(Scene scene, LoadSceneMode mode)
     {
         print($"{thisClass}: Successfully loaded {scene.name}");
 
         // Design choice: For every scene _except_ the root scene or a scene specified
         // as "load this first", set that scene to "active" as soon as it's loaded
-        if(!scene.name.Equals(rootSceneName))
+        if (!scene.name.Equals(rootSceneName))
         {
             print($"{thisClass}: Setting {scene.name} as active scene");
             SceneManager.SetActiveScene(scene);
         }
-
-        // Track all loading/loaded scenes locally, whether they're active or not
-        loadedScenes.Add(scene.name);
 
         // Design choice: Only save preferences in permanent fashion
         // on scene load. This helps to prevent scenes which terminate
@@ -347,25 +324,28 @@ public class SceneSwitcher : Singleton<SceneSwitcher>
     private void SceneUnloaded(Scene scene)
     {
         print($"{thisClass}: Successfully unloaded {scene.name}");
-        loadedScenes.Remove(scene.name);
+        //loadedScenes.Remove(scene.name);
     }
 
     private void ActiveSceneChanged(Scene oldScene, Scene newScene)
     {
-        print($"{thisClass}: Detected change of active scene from {oldScene.name} to {newScene.name}");
-        activeSceneName = newScene.name;
-
-        if(oldScene.name.Equals(loadingSceneName))
+        /*if (oldScene != null && !string.IsNullOrEmpty(oldScene.name))
         {
-            BeginUnload(loadingSceneName);
-        }
+            print($"{thisClass}: Detected change of active scene from {oldScene.name} to {newScene.name}");
+            activeSceneName = newScene.name;
+
+            if (oldScene.name.Equals(loadingSceneName))
+            {
+                //BeginUnload(loadingSceneName);
+                StartCoroutine(UnloadScene(loadingSceneName));
+            }
+        }*/
     }
 
     private void NewPlayerAdded(PlayerIndex index)
     {
         print($"{thisClass}: New TiltFive player number {index} added");
         Scene currentScene = SceneManager.GetActiveScene();
-        SceneManager.SetActiveScene(GetRootScene());
         StartCoroutine(WaitForPlayerConnection(currentScene, index));
     }
 }

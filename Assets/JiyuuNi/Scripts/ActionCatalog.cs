@@ -16,9 +16,8 @@ public class ActionCatalog : MonoBehaviour
     {
         CameraSwitcher.OnCameraChange += OnCameraChange;
         HorizontalSelector.OnSelectionChange += OnSelectionChange;
+        KartSelector.onKartChange += OnKartChange;
         ResetToStartingLine.OnOutOfBounds += OnOutOfBounds;
-        SceneSwitcher.sceneLoading += SceneLoading;
-        SceneSwitcher.sceneUnloading += SceneUnloading;
         SceneSwitcher.loadProgress += LoadProgress;
         SceneManager.sceneLoaded += SceneLoaded;
         SceneManager.sceneUnloaded += SceneUnloaded;
@@ -28,9 +27,8 @@ public class ActionCatalog : MonoBehaviour
     {
         CameraSwitcher.OnCameraChange -= OnCameraChange;
         HorizontalSelector.OnSelectionChange -= OnSelectionChange;
+        KartSelector.onKartChange -= OnKartChange;
         ResetToStartingLine.OnOutOfBounds += OnOutOfBounds;
-        SceneSwitcher.sceneLoading -= SceneLoading;
-        SceneSwitcher.sceneUnloading -= SceneUnloading;
         SceneSwitcher.loadProgress -= LoadProgress;
         SceneManager.sceneLoaded -= SceneLoaded;
         SceneManager.sceneUnloaded -= SceneUnloaded;
@@ -49,6 +47,14 @@ public class ActionCatalog : MonoBehaviour
         if (LoggingEnabled)
         {
             print($"{thisClass}: Detected OnSelectionChange for {canvasName} to value {objName}");
+        }
+    }
+
+    void OnKartChange(GameObject gameObj)
+    {
+        if (LoggingEnabled)
+        {
+            print($"{thisClass}: Detected OnKartChange for {gameObj.name}");
         }
     }
 

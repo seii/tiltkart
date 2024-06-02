@@ -110,10 +110,17 @@ public class PreferenceManager : Singleton<PreferenceManager>
         }
         else if (prefDict.ContainsKey(key))
         {
-            string tempValue = prefDict[key];
-            print($"{thisClass}: Preference \"{key}\" found with value \"{tempValue}\"");
-            
-            result = tempValue;
+            if(String.IsNullOrEmpty(prefDict[key]))
+            {
+                print($"{thisClass}: Preference \"{key}\" found with null or empty value, skipping load");
+            }
+            else
+            {
+                string tempValue = prefDict[key];
+                print($"{thisClass}: Preference \"{key}\" found with value \"{tempValue}\"");
+
+                result = tempValue;
+            }
         }
 
         return result;

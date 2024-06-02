@@ -18,6 +18,7 @@ public class ObjectiveManager : MonoBehaviour
 
     public void OnEnable()
     {
+        //print($"{thisClass}: BeginEnable");
         RegisterObjective += OnRegisterObjective;
         isCompleted = false;
         print($"Enabled {thisClass}");

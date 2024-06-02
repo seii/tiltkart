@@ -10,6 +10,7 @@
         private PoolObjectDef[] allPools;
         public void OnEnable()
         {
+            //print($"PoolInitializer: BeginEnable");
             initialize();
         }
         

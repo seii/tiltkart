@@ -6,7 +6,11 @@ public class NotificationHUDManager : MonoBehaviour
     public UITable notificationPanel;
     [Tooltip("Prefab for the notifications")]
     public PoolObjectDef notificationPrefab;
-    
+
+    private void OnDisable()
+    {
+        Objective.onUpdateObjective -= OnUpdateObjective;
+    }
 
     void OnUpdateObjective(UnityActionUpdateObjective updateObjective)
     {

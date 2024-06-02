@@ -21,14 +21,14 @@ EditorBuildSettings:
     path: Assets/JiyuuNi/Scenes/TrackSelectMenuScene.unity
     guid: 2b79b781abaa8744a9daf65972f841c1
   - enabled: 1
-    path: Assets/JiyuuNi/Scenes/OvalScene.unity
-    guid: fc26ef362246fcb44aa9f1d76a3624f6
-  - enabled: 1
     path: Assets/JiyuuNi/Scenes/CountryScene.unity
     guid: 7f11c564ccaaf62448514d7745046661
   - enabled: 1
     path: Assets/JiyuuNi/Scenes/MountainScene.unity
     guid: d1b5ef42201332d44b08c00688038ead
+  - enabled: 1
+    path: Assets/JiyuuNi/Scenes/OvalScene.unity
+    guid: fc26ef362246fcb44aa9f1d76a3624f6
   - enabled: 1
     path: Assets/JiyuuNi/Scenes/WindingScene.unity
     guid: 30fea35e1f1a86444b2be5dcb1194599

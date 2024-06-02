@@ -28,7 +28,6 @@ public class DisplayMessage : MonoBehaviour
         
         DebugUtility.HandleErrorIfNullFindObject<DisplayMessageManager, DisplayMessage>(m_DisplayMessageManager, this);
 
-
         m_WasDisplayed = false;
     }
 

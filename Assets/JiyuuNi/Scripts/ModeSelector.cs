@@ -16,6 +16,7 @@ public class ModeSelector : MonoBehaviour
     // OnEnable is called before Start
     void OnEnable()
     {
+        //print($"{thisClass}: BeginEnable");
         modeName = PlayerPrefs.GetString("Mode");
 
         bool modeSet = SetObjectiveManagerActiveIfExists();

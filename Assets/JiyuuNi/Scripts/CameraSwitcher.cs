@@ -16,6 +16,11 @@ public class CameraSwitcher : MonoBehaviour
 
     private string thisClass = nameof(CameraSwitcher);
 
+    void OnEnable()
+    {
+        //print($"{thisClass}: BeginEnable");
+    }
+
     // Start is called before the first frame update
     protected void Start()
     {

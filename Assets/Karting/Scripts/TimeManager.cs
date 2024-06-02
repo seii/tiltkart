@@ -24,6 +24,7 @@ public class TimeManager : MonoBehaviour
 
     void OnEnable()
     {
+        //print($"{thisClass}: BeginEnable");
         OnAdjustTime += AdjustTime;
         OnSetTime += SetTime;
     }
@@ -36,11 +37,13 @@ public class TimeManager : MonoBehaviour
 
     private void AdjustTime(float delta)
     {
+        //print($"{thisClass}: Adjusting time by {delta}");
         TimeRemaining += delta;
     }
 
     private void SetTime(int time, bool isFinite, GameMode gameMode)
     {
+        //print($"{thisClass}: Setting time to {time}, isFinite = {isFinite} for game mode {gameMode}");
         TotalTime = time;
         IsFinite = isFinite;
         TimeRemaining = TotalTime;
@@ -49,7 +52,7 @@ public class TimeManager : MonoBehaviour
     void Update()
     {
         if (!raceStarted) return;
-        
+
         if (IsFinite && !IsOver)
         {
             TimeRemaining -= Time.deltaTime;

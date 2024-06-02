@@ -28,10 +28,13 @@ public class SimpleFollow : MonoBehaviour
 
     private string thisClass = nameof(SimpleFollow);
 
+    private void OnEnable()
+    {
+        KartSelector.onKartChange += UpdateFollowObject;
+    }
+
     private void Start()
     {
-        KartSelector.onKartChange += OnKartChange;
-
         Follow();
     }
 
@@ -43,7 +46,7 @@ public class SimpleFollow : MonoBehaviour
 
     private void OnDisable()
     {
-        KartSelector.onKartChange -= OnKartChange;
+        KartSelector.onKartChange -= UpdateFollowObject;
     }
 
     private void Follow()
@@ -63,12 +66,6 @@ public class SimpleFollow : MonoBehaviour
         //    prevent motion sickness during collisions)
         transform.rotation = Quaternion.Euler(0, followObject.transform.rotation.eulerAngles.y, 0);
         transform.Rotate(rotationAdjustment);
-    }
-
-    private void OnKartChange(GameObject newKart)
-    {
-        /*print($"{thisClass}: Follow object changed to {newKart.name}");
-        followObject = newKart;*/
     }
 
     public void UpdateFollowObject(GameObject newFollow)

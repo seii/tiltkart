@@ -32,10 +32,17 @@ public class UITable : MonoBehaviour
 
     [Tooltip("Add new the new items below existing items.")]
     public bool down;
+
+    public Vector3 tableOffset = Vector3.zero;
     
     public void UpdateTable(GameObject newItem)
     {
         if (newItem != null) newItem.GetComponent<RectTransform>().localScale = Vector3.one;
+
+        if(tableOffset != Vector3.zero)
+        {
+            transform.position += tableOffset;
+        }
 
         int childCount = transform.childCount;
 

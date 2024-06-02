@@ -9,12 +9,12 @@ public class BindButtonToScene : MonoBehaviour
 {
     public void LoadNamedScene(string sceneName)
     {
-        SceneSwitcher.Instance.BeginLoad(sceneName, false, true);
+        SceneSwitcher.Instance.ReplaceCurrentScene(sceneName, false);
     }
 
     public void LoadSceneByPrefName(string prefName)
     {
         string sceneName = PreferenceManager.Instance.GetPref(prefName) + "Scene";
-        SceneSwitcher.Instance.BeginLoad(sceneName, true, true);
+        SceneSwitcher.Instance.ReplaceCurrentScene(sceneName, true);
     }
 }

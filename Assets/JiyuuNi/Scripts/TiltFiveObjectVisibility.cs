@@ -18,6 +18,11 @@ public class TiltFiveObjectVisibility : MonoBehaviour
 
     private string thisClass = nameof(TiltFiveObjectVisibility);
 
+    void OnEnable()
+    {
+        //print($"{thisClass}: BeginEnable");
+    }
+
     // Start is called before the first frame update
     private void Start()
     {

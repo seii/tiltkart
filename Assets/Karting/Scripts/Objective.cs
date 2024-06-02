@@ -43,7 +43,8 @@ public abstract class Objective : MonoBehaviour
 
     protected NotificationHUDManager m_NotificationHUDManager;
     protected ObjectiveHUDManger m_ObjectiveHUDManger;
-    
+    protected T5NotificationManager m_T5NotificationManager;
+
     public static Action<TargetObject> OnRegisterPickup;
     public static Action<TargetObject> OnUnregisterPickup;
     

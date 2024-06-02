@@ -20,7 +20,7 @@ public class HorizontalSelector : MonoBehaviour
 
     public static event Action<string, string> OnSelectionChange;
 
-    //private string thisClass = "HorizontalSelector";
+    private string thisClass = "HorizontalSelector";
 
     // Start with the first added item
     private int currentContentIndex = 0;
@@ -42,6 +42,11 @@ public class HorizontalSelector : MonoBehaviour
             {
                 nextContent();
             });
+
+            // If player doesn't choose any options, make sure the displayed
+            //    option gets written to preferences
+            PreferenceManager.Instance.SetPref(GetPrefNameFromForm(),
+                MakePrefValue(content[0].name));
         }
     }
 
@@ -74,7 +79,8 @@ public class HorizontalSelector : MonoBehaviour
         currentContentIndex = index;
         GameObject obj = content[currentContentIndex];
         obj.SetActive(true);
-        string prefValue = MakePrefValue(obj);
+        string prefValue = MakePrefValue(obj.name);
+        //print($"{thisClass}: Preference value reported as '{prefValue}'");
         PreferenceManager.Instance.SetPref(GetPrefNameFromForm(), prefValue);
 
         OnSelectionChange?.Invoke(this.gameObject.name, obj.name);
@@ -82,12 +88,14 @@ public class HorizontalSelector : MonoBehaviour
 
     private string GetPrefNameFromForm()
     {
-        return this.name.Substring(0, this.name.LastIndexOf("Form"));
+        string name = this.name.Substring(0, this.name.LastIndexOf("Form"));
+        //print($"{thisClass}: Preference name reported as '{name}'");
+        return name;
     }
 
-    private string MakePrefValue(GameObject obj)
+    private string MakePrefValue(string name)
     {
-        string tempName = obj.name;
+        string tempName = name;
 
         //print($"{thisClass}: Altering value {obj}");
         

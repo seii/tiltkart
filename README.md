@@ -4,7 +4,7 @@ This Unity-based game is intended to provide an example of making a pre-existing
 
 ## Added Features
 - NPC racers
-- TiltFive headset support
+- TiltFive headset support on Windows and Android
 - Game mode selection
    - Time Limit
    - Total Laps

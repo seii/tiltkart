@@ -23,6 +23,10 @@ This Unity-based game is intended to provide an example of making a pre-existing
    - Android touchscreen
    - Gamepad
 
+# Screenshot
+![TiltKart_MainMenu](https://github.com/seii/tiltkart/assets/8258251/68940577-2bd8-498b-ba11-cfb4594a64d5)
+
+
 # Contributing
 
 This repository was initially built using Unity version `2021.3.26f1`. Later Unity versions should be compatible, but this is not guaranteed.

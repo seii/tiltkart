@@ -773,7 +773,6 @@ GameObject:
   m_Component:
   - component: {fileID: 5999009648998803408}
   - component: {fileID: 5999009648998803409}
-  - component: {fileID: 6362154871324017266}
   m_Layer: 2
   m_Name: KartClassic_Ghost_1
   m_TagString: Ghost
@@ -815,19 +814,6 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &6362154871324017266
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5999009648998803415}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c8534e17a0f90604c9afd4f5c73d829f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_Id: 510a6eb7-8958-4f60-b668-b27b5c6f875f
 --- !u!1 &9059534026433585989
 GameObject:
   m_ObjectHideFlags: 0
